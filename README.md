@@ -28,3 +28,71 @@ Esta app genera equipos más equilibrados automáticamente.
 ---
 
 # 📥 Ejemplo de input
+
+Miércoles 15 abril. F11 a las 18.00 horas
+
+Aranda
+Patxi
+Ramón
+Sergio I
+Nico
+Facu
+Kevin
+José Ángel
+David Gut
+Julito
+Geisler
+Moncho
+Max
+Julián Lemar
+Andrés
+Iñaki DK
+Jon
+Rafa L
+Felipe
+Sebas
+Oscar
+Adrián
+Diego
+Santi
+
+R1. Pablo V
+
+
+---
+
+# 📤 Ejemplo de output
+
+
+Hoy 18:00 - 20:00
+
+🔴 Equipo Rojo
+
+Alvaro
+Julito
+Diego
+Kevin
+Moncho
+Santi
+Patxi
+Sebas
+Iñaki
+Pierre
+Felipe
+Pablo V
+
+⚪ Equipo Blanco
+
+Aranda
+Max
+Geisler
+Ramón
+Andrés
+José Ángel
+Nico
+Jon
+Edu G
+Adrián
+Facu
+David G
+
