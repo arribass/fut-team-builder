@@ -41,11 +41,64 @@ export default function Home() {
     alert('¡Copiado al portapapeles!');
   };
 
+  const handleReset = () => {
+    setInputText('');
+    setTeams(null);
+    setMatchHeader('');
+  };
+
+  const handleExample = () => {
+
+    const exampleList = `Miércoles 18:30 - Campo F11
+
+1. Aranda
+2. Patxi
+3. Ramon
+4. Sergio I
+5. Nico
+6. Facu
+7. kevin
+8. Jose Ángel 
+9. David gut
+10. Julito 
+11. Geisler
+12. Moncho
+13. Max
+14. Julián Lemar
+15. Andrés 
+16. Iñaki DK
+17. Jon
+18. Rafa L
+19. Felipe
+20. Sebas
+21. Oscar
+22. Adrián 
+23. Diego
+24. Santi
+———-
+R1. Pablo V
+R2. Pierre`;
+    setInputText(exampleList);
+  };
+
   return (
     <main>
-      <h1 className="title">Fútbol Team Balancer</h1>
+      <header className="main-header">
+        <div className="header-content">
+          <div className="logo">
+            <span className="logo-emoji">⚽</span>
+            <span className="logo-text">FUT<span className="logo-highlight">BUILDER</span></span>
+          </div>
+          <nav className="header-actions">
+            <button className="header-btn" onClick={handleReset}>
+              <span className="btn-icon">🗑️</span> Limpiar
+            </button>
+          </nav>
+        </div>
+      </header>
 
       <div className="container">
+
         {/* Left Panel: Input */}
         <div className="left-panel">
           <div className="card">
@@ -62,11 +115,17 @@ Miércoles 18:00
                 onChange={(e) => setInputText(e.target.value)}
               />
             </div>
-            <button className="btn" onClick={handleGenerate}>
-              Generar Equipos
-            </button>
+            <div className="button-group">
+              <button className="btn" onClick={handleGenerate}>
+                Generar Equipos
+              </button>
+              <button className="btn btn-outline" onClick={handleExample}>
+                Cargar Ejemplo 📝
+              </button>
+            </div>
           </div>
         </div>
+
 
         {/* Right Panel: Output */}
         <div className="right-panel">
