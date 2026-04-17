@@ -1,0 +1,68 @@
+/**
+ * Parses a string of player names into an array of player objects.
+ * Handles formats like:
+ * - 1. Name
+ * - Name
+ * - R1. Name (marks as reserve)
+ * @param {string} text 
+ * @returns {Array<{name: string, isReserve: boolean}>}
+ */
+export function parsePlayers(text) {
+  if (!text) return [];
+
+  const lines = text.split('\n');
+  const players = [];
+
+  lines.forEach(line => {
+    const trimmed = line.trim();
+    if (!trimmed) return;
+
+    // Skip common date/time patterns or header lines
+    // e.g. "Miércoles 15 abril", "F11 a las 18.00"
+    if (trimmed.match(/^(lunes|martes|miércoles|jueves|viernes|sábado|domingo)/i)) return;
+    if (trimmed.match(/hora|hoy/i)) return;
+
+    // Detect reserves
+    const isReserve = trimmed.match(/^(R[0-9]|Reserva)/i) !== null;
+
+    // Clean name: remove "1. ", "R1. ", etc.
+    let name = trimmed
+      .replace(/^[0-9]+[\.\s-]+/, '') // remove leading counters like "1. "
+      .replace(/^(R[0-9]+|Reserva)[\.\s-]+/i, '') // remove reserve prefix
+      .trim();
+
+    if (name) {
+      players.push({ name, isReserve });
+    }
+  });
+
+  return players;
+}
+
+/**
+ * Splits players into two balanced teams.
+ * For MVP, it alternate between teams to ensure equal numbers.
+ * @param {Array<{name: string, isReserve: boolean}>} players 
+ * @returns {{team1: string[], team2: string[], reserves: string[]}}
+ */
+export function balanceTeams(players) {
+  // Separate active players and reserves
+  const activePlayers = players.filter(p => !p.isReserve);
+  const reserves = players.filter(p => p.isReserve).map(p => p.name);
+
+  // Shuffle active players to avoid order bias
+  const shuffled = [...activePlayers].sort(() => Math.random() - 0.5);
+
+  const team1 = [];
+  const team2 = [];
+
+  shuffled.forEach((player, index) => {
+    if (index % 2 === 0) {
+      team1.push(player.name);
+    } else {
+      team2.push(player.name);
+    }
+  });
+
+  return { team1, team2, reserves };
+}

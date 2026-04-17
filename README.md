@@ -1,98 +1,36 @@
-# ⚽ Team Balancer (Fútbol App)
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-App para generar equipos equilibrados automáticamente a partir de una lista de jugadores pegada en texto plano. Pensado para partidos informales donde siempre hay discusiones por desequilibrios 😄
+## Getting Started
 
-Stack: **Next.js + Supabase**
+First, run the development server:
 
----
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
 
-# 🚀 Problema que resuelve
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-En partidos de fútbol de grupo:
-- los equipos salen desbalanceados
-- siempre hay discusión (“este equipo es más fuerte”)
-- se hace a dedo o random sin criterio
+You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
 
-Esta app genera equipos más equilibrados automáticamente.
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
----
+## Learn More
 
-# 🧠 Idea general
+To learn more about Next.js, take a look at the following resources:
 
-1. Pegas una lista de jugadores
-2. El sistema parsea los nombres
-3. Se asigna un “rating” a cada jugador
-4. Se generan equipos balanceados automáticamente
-5. Se muestra resultado listo para usar
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
----
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-# 📥 Ejemplo de input
+## Deploy on Vercel
 
-Miércoles 15 abril. F11 a las 18.00 horas
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-Aranda
-Patxi
-Ramón
-Sergio I
-Nico
-Facu
-Kevin
-José Ángel
-David Gut
-Julito
-Geisler
-Moncho
-Max
-Julián Lemar
-Andrés
-Iñaki DK
-Jon
-Rafa L
-Felipe
-Sebas
-Oscar
-Adrián
-Diego
-Santi
-
-R1. Pablo V
-
-
----
-
-# 📤 Ejemplo de output
-
-
-Hoy 18:00 - 20:00
-
-🔴 Equipo Rojo
-
-Alvaro
-Julito
-Diego
-Kevin
-Moncho
-Santi
-Patxi
-Sebas
-Iñaki
-Pierre
-Felipe
-Pablo V
-
-⚪ Equipo Blanco
-
-Aranda
-Max
-Geisler
-Ramón
-Andrés
-José Ángel
-Nico
-Jon
-Edu G
-Adrián
-Facu
-David G
-
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
