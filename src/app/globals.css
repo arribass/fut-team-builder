@@ -214,3 +214,28 @@ textarea::placeholder {
   text-align: center;
   font-style: italic;
 }
+
+.match-header-display {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  color: var(--accent-blue);
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.player-badge {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--card-border);
+  padding: 0.25rem 0.6rem;
+  border-radius: 2rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  list-style: none;
+}
+

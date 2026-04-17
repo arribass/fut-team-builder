@@ -1,14 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import { parsePlayers, balanceTeams } from '@/lib/balancer';
+import { parsePlayers, balanceTeams, parseHeader } from '@/lib/balancer';
 
 export default function Home() {
   const [inputText, setInputText] = useState('');
   const [teams, setTeams] = useState(null);
+  const [matchHeader, setMatchHeader] = useState('');
 
   const handleGenerate = () => {
     const players = parsePlayers(inputText);
+    const header = parseHeader(inputText);
+    setMatchHeader(header);
+    
     if (players.length > 0) {
       const result = balanceTeams(players);
       setTeams(result);
@@ -18,7 +22,9 @@ export default function Home() {
   const copyToClipboard = () => {
     if (!teams) return;
 
-    let text = `⚽ *Fut Team Balancer*\n\n`;
+    let text = `⚽ *Fut Team Balancer*\n`;
+    if (matchHeader) text += `📅 ${matchHeader}\n`;
+    text += `\n`;
     
     text += `🔴 *EQUIPO ROJO*\n`;
     teams.team1.forEach(p => text += `• ${p}\n`);
@@ -48,9 +54,9 @@ export default function Home() {
               <textarea
                 placeholder="Pega la lista aquí...
 Ejemplo:
-Aranda
-Patxi
-Ramón
+Miércoles 18:00
+1. Aranda
+2. Patxi
 ..."
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
@@ -69,6 +75,12 @@ Ramón
             
             {teams ? (
               <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                {matchHeader && (
+                  <div className="match-header-display">
+                    📅 {matchHeader}
+                  </div>
+                )}
+                
                 <div className="teams-grid">
                   <div className="team-column">
                     <h3 className="team-title team-red">🔴 Equipo Rojo</h3>
@@ -95,15 +107,15 @@ Ramón
                 {teams.reserves.length > 0 && (
                   <div className="team-column" style={{ marginTop: '1rem' }}>
                     <h3 className="team-title" style={{ fontSize: '1rem', color: 'var(--text-secondary)' }}>⏳ Reservas</h3>
-                    <ul className="player-list" style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+                    <ul className="player-list" style={{ flexDirection: 'row', flexWrap: 'wrap', gap: '8px' }}>
                       {teams.reserves.map((name, i) => (
-                        <li key={i} className="player-item" style={{ fontSize: '0.8rem' }}>{name}</li>
+                        <li key={i} className="player-badge">{name}</li>
                       ))}
                     </ul>
                   </div>
                 )}
 
-                <button className="btn btn-secondary" onClick={copyToClipboard}>
+                <button className="btn btn-secondary" style={{ marginTop: 'auto' }} onClick={copyToClipboard}>
                   Copiar para WhatsApp 📱
                 </button>
               </div>
@@ -118,3 +130,4 @@ Ramón
     </main>
   );
 }
+

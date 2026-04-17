@@ -1,4 +1,30 @@
 /**
+ * Extracts a header (date/location) from the top of the text.
+ * @param {string} text 
+ * @returns {string}
+ */
+export function parseHeader(text) {
+  if (!text) return '';
+  const lines = text.split('\n');
+  const headerLines = [];
+  
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    
+    // If it starts with a number (like "1. ") or "R1", it's likely a player
+    if (trimmed.match(/^([0-9]|R[0-9])/i)) break;
+    
+    // If it's a separator, skip it but it might be the end of the header
+    if (trimmed.match(/^[—\-\._\*]+$/)) continue;
+    
+    headerLines.push(trimmed);
+  }
+  
+  return headerLines.join(' • ');
+}
+
+/**
  * Parses a string of player names into an array of player objects.
  * Handles formats like:
  * - 1. Name
@@ -17,10 +43,16 @@ export function parsePlayers(text) {
     const trimmed = line.trim();
     if (!trimmed) return;
 
-    // Skip common date/time patterns or header lines
+    // Skip separators like "———-" or "****"
+    if (trimmed.match(/^[—\-\._\*]+$/)) return;
+
+    // Skip common date/time patterns if they don't look like players
     // e.g. "Miércoles 15 abril", "F11 a las 18.00"
-    if (trimmed.match(/^(lunes|martes|miércoles|jueves|viernes|sábado|domingo)/i)) return;
-    if (trimmed.match(/hora|hoy/i)) return;
+    // Only skip if it doesn't start with a player prefix
+    if (!trimmed.match(/^([0-9]|R[0-9])/i)) {
+      if (trimmed.match(/^(lunes|martes|miércoles|jueves|viernes|sábado|domingo)/i)) return;
+      if (trimmed.match(/hora|hoy/i)) return;
+    }
 
     // Detect reserves
     const isReserve = trimmed.match(/^(R[0-9]|Reserva)/i) !== null;
@@ -31,7 +63,7 @@ export function parsePlayers(text) {
       .replace(/^(R[0-9]+|Reserva)[\.\s-]+/i, '') // remove reserve prefix
       .trim();
 
-    if (name) {
+    if (name && name.length > 1) { // Basic check to avoid stray chars
       players.push({ name, isReserve });
     }
   });
@@ -66,3 +98,4 @@ export function balanceTeams(players) {
 
   return { team1, team2, reserves };
 }
+
