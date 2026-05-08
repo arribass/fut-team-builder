@@ -64,7 +64,7 @@ export function parsePlayers(text) {
       .trim();
 
     if (name && name.length > 1) { // Basic check to avoid stray chars
-      players.push({ name, isReserve });
+      players.push({ name, isReserve, position: null, side: null });
     }
   });
 
@@ -80,20 +80,35 @@ export function parsePlayers(text) {
 export function balanceTeams(players) {
   // Separate active players and reserves
   const activePlayers = players.filter(p => !p.isReserve);
-  const reserves = players.filter(p => p.isReserve).map(p => p.name);
+  const reserves = players.filter(p => p.isReserve);
 
   // Shuffle active players to avoid order bias
   const shuffled = [...activePlayers].sort(() => Math.random() - 0.5);
 
+  // Group by position and side
+  const groups = {};
+  shuffled.forEach(p => {
+    const key = `${p.position || 'ANY'}-${p.side || 'ANY'}`;
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(p);
+  });
+
   const team1 = [];
   const team2 = [];
+  let turn = 0; // 0 for team1, 1 for team2
 
-  shuffled.forEach((player, index) => {
-    if (index % 2 === 0) {
-      team1.push(player.name);
-    } else {
-      team2.push(player.name);
-    }
+  const sortedKeys = Object.keys(groups).sort();
+  
+  sortedKeys.forEach(key => {
+    groups[key].forEach(p => {
+      if (turn === 0) {
+        team1.push(p);
+        turn = 1;
+      } else {
+        team2.push(p);
+        turn = 0;
+      }
+    });
   });
 
   return { team1, team2, reserves };

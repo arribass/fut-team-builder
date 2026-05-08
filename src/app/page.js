@@ -3,10 +3,108 @@
 import { useState } from 'react';
 import { parsePlayers, balanceTeams, parseHeader } from '@/lib/balancer';
 
+const getPlayerStyle = (teamNum, p, allPlayersInTeam) => {
+  let x = teamNum === 1 ? 25 : 75;
+  let y = 50;
+
+  if (p.position === 'POR') x = teamNum === 1 ? 5 : 95;
+  else if (p.position === 'DEF') x = teamNum === 1 ? 20 : 80;
+  else if (p.position === 'MED') x = teamNum === 1 ? 40 : 60;
+  else if (p.position === 'ATQ') x = teamNum === 1 ? 48 : 52;
+
+  if (p.side === 'IZD') y = 15;
+  else if (p.side === 'DCHA') y = 85;
+  else y = 50;
+
+  const similarPlayers = allPlayersInTeam.filter(
+    op => op.position === p.position && op.side === p.side
+  );
+  if (similarPlayers.length > 1) {
+    const simIndex = similarPlayers.findIndex(op => op.name === p.name);
+    const offset = (simIndex - (similarPlayers.length - 1) / 2) * 20;
+    y += offset;
+  }
+
+  y = Math.max(5, Math.min(95, y));
+  return { left: `${x}%`, top: `${y}%` };
+};
+
 export default function Home() {
   const [inputText, setInputText] = useState('');
   const [teams, setTeams] = useState(null);
   const [matchHeader, setMatchHeader] = useState('');
+  const [teamSize, setTeamSize] = useState(11);
+  const [draggedItem, setDraggedItem] = useState(null);
+  const [dragOverTeam, setDragOverTeam] = useState(null);
+  const [savedFeedback, setSavedFeedback] = useState({});
+
+  const loadPreferences = () => {
+    try {
+      const data = localStorage.getItem('fut-builder-players');
+      return data ? JSON.parse(data) : {};
+    } catch (e) {
+      return {};
+    }
+  };
+
+  const handleSavePlayer = (p) => {
+    try {
+      const prefs = loadPreferences();
+      prefs[p.name] = { position: p.position, side: p.side };
+      localStorage.setItem('fut-builder-players', JSON.stringify(prefs));
+      
+      setSavedFeedback(prev => ({ ...prev, [p.name]: true }));
+      setTimeout(() => {
+        setSavedFeedback(prev => ({ ...prev, [p.name]: false }));
+      }, 1500);
+    } catch (e) {
+      console.error('Error saving preference', e);
+    }
+  };
+
+  const handleDragStart = (e, team, index) => {
+    setDraggedItem({ team, index });
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', team + index);
+  };
+
+  const handleDragOver = (e, team) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (dragOverTeam !== team) {
+      setDragOverTeam(team);
+    }
+  };
+
+  const handleDragLeave = () => {
+    setDragOverTeam(null);
+  };
+
+  const handleDrop = (e, targetTeam) => {
+    e.preventDefault();
+    setDragOverTeam(null);
+    if (!draggedItem) return;
+
+    const { team: sourceTeam, index: sourceIndex } = draggedItem;
+    if (sourceTeam === targetTeam) {
+      setDraggedItem(null);
+      return;
+    }
+
+    setTeams(prevTeams => {
+      const newTeams = {
+        team1: [...prevTeams.team1],
+        team2: [...prevTeams.team2],
+        reserves: [...prevTeams.reserves]
+      };
+      
+      const [movedPlayer] = newTeams[sourceTeam].splice(sourceIndex, 1);
+      newTeams[targetTeam].push(movedPlayer);
+      
+      return newTeams;
+    });
+    setDraggedItem(null);
+  };
 
   const handleGenerate = () => {
     const players = parsePlayers(inputText);
@@ -14,9 +112,37 @@ export default function Home() {
     setMatchHeader(header);
     
     if (players.length > 0) {
-      const result = balanceTeams(players);
+      const prefs = loadPreferences();
+      const playersWithPrefs = players.map(p => {
+        if (prefs[p.name]) {
+          return { ...p, position: prefs[p.name].position, side: prefs[p.name].side };
+        }
+        return p;
+      });
+      const result = balanceTeams(playersWithPrefs);
       setTeams(result);
     }
+  };
+
+  const handleRebalance = () => {
+    if (!teams) return;
+    const allPlayers = [...teams.team1, ...teams.team2, ...teams.reserves];
+    const result = balanceTeams(allPlayers);
+    setTeams(result);
+  };
+
+  const handleUpdatePlayer = (teamName, index, field, value) => {
+    setTeams(prev => {
+      const newTeams = { ...prev };
+      newTeams[teamName] = [...prev[teamName]];
+      // Toggle off if same value is clicked
+      const currentValue = newTeams[teamName][index][field];
+      newTeams[teamName][index] = { 
+        ...newTeams[teamName][index], 
+        [field]: currentValue === value ? null : value 
+      };
+      return newTeams;
+    });
   };
 
   const copyToClipboard = () => {
@@ -27,14 +153,32 @@ export default function Home() {
     text += `\n`;
     
     text += `🔴 *EQUIPO ROJO*\n`;
-    teams.team1.forEach(p => text += `• ${p}\n`);
+    teams.team1.forEach(p => {
+      let info = [];
+      if (p.position) info.push(p.position);
+      if (p.side) info.push(p.side);
+      const suffix = info.length > 0 ? ` [${info.join(' ')}]` : '';
+      text += `• ${p.name}${suffix}\n`;
+    });
     
     text += `\n⚪ *EQUIPO BLANCO*\n`;
-    teams.team2.forEach(p => text += `• ${p}\n`);
+    teams.team2.forEach(p => {
+      let info = [];
+      if (p.position) info.push(p.position);
+      if (p.side) info.push(p.side);
+      const suffix = info.length > 0 ? ` [${info.join(' ')}]` : '';
+      text += `• ${p.name}${suffix}\n`;
+    });
 
     if (teams.reserves.length > 0) {
       text += `\n⏳ *RESERVAS*\n`;
-      teams.reserves.forEach(p => text += `• ${p}\n`);
+      teams.reserves.forEach(p => {
+        let info = [];
+        if (p.position) info.push(p.position);
+        if (p.side) info.push(p.side);
+        const suffix = info.length > 0 ? ` [${info.join(' ')}]` : '';
+        text += `• ${p.name}${suffix}\n`;
+      });
     }
 
     navigator.clipboard.writeText(text);
@@ -115,6 +259,20 @@ Miércoles 18:00
                 onChange={(e) => setInputText(e.target.value)}
               />
             </div>
+            
+            <div className="team-size-config">
+              <label htmlFor="teamSize">Jugadores por equipo:</label>
+              <input 
+                type="number" 
+                id="teamSize" 
+                value={teamSize} 
+                onChange={(e) => setTeamSize(Number(e.target.value))}
+                min="1"
+                max="20"
+                className="team-size-input"
+              />
+            </div>
+
             <div className="button-group">
               <button className="btn" onClick={handleGenerate}>
                 Generar Equipos
@@ -141,22 +299,108 @@ Miércoles 18:00
                 )}
                 
                 <div className="teams-grid">
-                  <div className="team-column">
-                    <h3 className="team-title team-red">🔴 Equipo Rojo</h3>
+                  <div 
+                    className={`team-column ${dragOverTeam === 'team1' ? 'drag-over' : ''} ${teams.team1.length >= teamSize ? 'team-complete' : 'team-incomplete'}`}
+                    onDragOver={(e) => handleDragOver(e, 'team1')}
+                    onDragLeave={handleDragLeave}
+                    onDrop={(e) => handleDrop(e, 'team1')}
+                  >
+                    <div className="team-header-row">
+                      <h3 className="team-title team-red">🔴 Equipo Rojo</h3>
+                      <span className={`team-status ${teams.team1.length < teamSize ? 'status-incomplete' : 'status-complete'}`}>
+                        {teams.team1.length} / {teamSize}
+                      </span>
+                    </div>
                     <ul className="player-list">
-                      {teams.team1.map((name, i) => (
-                        <li key={i} className="player-item" style={{ animationDelay: `${i * 0.05}s` }}>
-                          {name}
+                      {teams.team1.map((p, i) => (
+                        <li 
+                          key={`team1-${i}-${p.name}`} 
+                          className="player-item" 
+                          style={{ animationDelay: `${i * 0.05}s` }}
+                          draggable="true"
+                          onDragStart={(e) => handleDragStart(e, 'team1', i)}
+                        >
+                          <div className="player-name">{p.name}</div>
+                          <div className="player-toggles">
+                            <div className="toggle-group">
+                              {['DEF', 'MED', 'ATQ'].map(pos => (
+                                <button 
+                                  key={pos} 
+                                  className={`pos-badge ${p.position === pos ? 'active' : ''}`}
+                                  onClick={() => handleUpdatePlayer('team1', i, 'position', pos)}
+                                >{pos}</button>
+                              ))}
+                            </div>
+                            <div className="toggle-group">
+                              {['IZD', 'DCHA'].map(side => (
+                                <button 
+                                  key={side} 
+                                  className={`side-badge ${p.side === side ? 'active' : ''}`}
+                                  onClick={() => handleUpdatePlayer('team1', i, 'side', side)}
+                                >{side}</button>
+                              ))}
+                            </div>
+                            <button 
+                              className={`save-badge ${savedFeedback[p.name] ? 'saved' : ''}`}
+                              onClick={() => handleSavePlayer(p)}
+                              title="Guardar preferencias"
+                            >
+                              {savedFeedback[p.name] ? '✓' : '💾'}
+                            </button>
+                          </div>
                         </li>
                       ))}
                     </ul>
                   </div>
-                  <div className="team-column">
-                    <h3 className="team-title team-white">⚪ Equipo Blanco</h3>
+                  <div 
+                    className={`team-column ${dragOverTeam === 'team2' ? 'drag-over' : ''} ${teams.team2.length >= teamSize ? 'team-complete' : 'team-incomplete'}`}
+                    onDragOver={(e) => handleDragOver(e, 'team2')}
+                    onDragLeave={handleDragLeave}
+                    onDrop={(e) => handleDrop(e, 'team2')}
+                  >
+                    <div className="team-header-row">
+                      <h3 className="team-title team-white">⚪ Equipo Blanco</h3>
+                      <span className={`team-status ${teams.team2.length < teamSize ? 'status-incomplete' : 'status-complete'}`}>
+                        {teams.team2.length} / {teamSize}
+                      </span>
+                    </div>
                     <ul className="player-list">
-                      {teams.team2.map((name, i) => (
-                        <li key={i} className="player-item" style={{ animationDelay: `${(i + teams.team1.length) * 0.05}s` }}>
-                          {name}
+                      {teams.team2.map((p, i) => (
+                        <li 
+                          key={`team2-${i}-${p.name}`} 
+                          className="player-item" 
+                          style={{ animationDelay: `${(i + teams.team1.length) * 0.05}s` }}
+                          draggable="true"
+                          onDragStart={(e) => handleDragStart(e, 'team2', i)}
+                        >
+                          <div className="player-name">{p.name}</div>
+                          <div className="player-toggles">
+                            <div className="toggle-group">
+                              {['DEF', 'MED', 'ATQ'].map(pos => (
+                                <button 
+                                  key={pos} 
+                                  className={`pos-badge ${p.position === pos ? 'active' : ''}`}
+                                  onClick={() => handleUpdatePlayer('team2', i, 'position', pos)}
+                                >{pos}</button>
+                              ))}
+                            </div>
+                            <div className="toggle-group">
+                              {['IZD', 'DCHA'].map(side => (
+                                <button 
+                                  key={side} 
+                                  className={`side-badge ${p.side === side ? 'active' : ''}`}
+                                  onClick={() => handleUpdatePlayer('team2', i, 'side', side)}
+                                >{side}</button>
+                              ))}
+                            </div>
+                            <button 
+                              className={`save-badge ${savedFeedback[p.name] ? 'saved' : ''}`}
+                              onClick={() => handleSavePlayer(p)}
+                              title="Guardar preferencias"
+                            >
+                              {savedFeedback[p.name] ? '✓' : '💾'}
+                            </button>
+                          </div>
                         </li>
                       ))}
                     </ul>
@@ -164,19 +408,37 @@ Miércoles 18:00
                 </div>
 
                 {teams.reserves.length > 0 && (
-                  <div className="team-column" style={{ marginTop: '1rem' }}>
+                  <div 
+                    className={`team-column ${dragOverTeam === 'reserves' ? 'drag-over' : ''}`} 
+                    style={{ marginTop: '1rem' }}
+                    onDragOver={(e) => handleDragOver(e, 'reserves')}
+                    onDragLeave={handleDragLeave}
+                    onDrop={(e) => handleDrop(e, 'reserves')}
+                  >
                     <h3 className="team-title" style={{ fontSize: '1rem', color: 'var(--text-secondary)' }}>⏳ Reservas</h3>
                     <ul className="player-list" style={{ flexDirection: 'row', flexWrap: 'wrap', gap: '8px' }}>
-                      {teams.reserves.map((name, i) => (
-                        <li key={i} className="player-badge">{name}</li>
+                      {teams.reserves.map((p, i) => (
+                        <li 
+                          key={`reserves-${i}-${p.name}`} 
+                          className="player-badge"
+                          draggable="true"
+                          onDragStart={(e) => handleDragStart(e, 'reserves', i)}
+                        >
+                          {p.name}
+                        </li>
                       ))}
                     </ul>
                   </div>
                 )}
 
-                <button className="btn btn-secondary" style={{ marginTop: 'auto' }} onClick={copyToClipboard}>
-                  Copiar para WhatsApp 📱
-                </button>
+                <div className="button-group" style={{ marginTop: 'auto' }}>
+                  <button className="btn" onClick={handleRebalance}>
+                    Re-equilibrar ⚖️
+                  </button>
+                  <button className="btn btn-secondary" style={{ marginTop: 0 }} onClick={copyToClipboard}>
+                    Copiar para WhatsApp 📱
+                  </button>
+                </div>
               </div>
             ) : (
               <div className="placeholder-text">
@@ -186,6 +448,40 @@ Miércoles 18:00
           </div>
         </div>
       </div>
+
+      {teams && (
+        <div className="pitch-section">
+          <h2 className="team-title" style={{ justifyContent: 'center', marginBottom: '1.5rem', width: '100%' }}>Pizarra Táctica 📋</h2>
+          <div className="pitch-container">
+            <div className="pitch-lines">
+              <div className="pitch-half-line"></div>
+              <div className="pitch-center-circle"></div>
+              <div className="pitch-penalty-left"></div>
+              <div className="pitch-penalty-right"></div>
+            </div>
+            
+            {teams.team1.map((p) => {
+              const style = getPlayerStyle(1, p, teams.team1);
+              return (
+                <div key={`pitch-t1-${p.name}`} className="pitch-player team-red-player" style={style}>
+                  <div className="player-dot"></div>
+                  <span className="pitch-player-name">{p.name}</span>
+                </div>
+              );
+            })}
+            
+            {teams.team2.map((p) => {
+              const style = getPlayerStyle(2, p, teams.team2);
+              return (
+                <div key={`pitch-t2-${p.name}`} className="pitch-player team-white-player" style={style}>
+                  <div className="player-dot"></div>
+                  <span className="pitch-player-name">{p.name}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </main>
   );
 }
