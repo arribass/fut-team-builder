@@ -62,6 +62,27 @@ export default function Home() {
     }
   };
 
+  const handleSaveAllPlayers = () => {
+    if (!teams) return;
+    try {
+      const prefs = loadPreferences();
+      const allPlayers = [...teams.team1, ...teams.team2, ...teams.reserves];
+      allPlayers.forEach(p => {
+        if (p.position || p.side) {
+          prefs[p.name] = { position: p.position, side: p.side };
+        }
+      });
+      localStorage.setItem('fut-builder-players', JSON.stringify(prefs));
+      
+      setSavedFeedback(prev => ({ ...prev, all: true }));
+      setTimeout(() => {
+        setSavedFeedback(prev => ({ ...prev, all: false }));
+      }, 1500);
+    } catch (e) {
+      console.error('Error saving all preferences', e);
+    }
+  };
+
   const handleDragStart = (e, team, index) => {
     setDraggedItem({ team, index });
     e.dataTransfer.effectAllowed = 'move';
@@ -233,7 +254,34 @@ R2. Pierre`;
             <span className="logo-emoji">⚽</span>
             <span className="logo-text">FUT<span className="logo-highlight">BUILDER</span></span>
           </div>
+          
+          {teams && (
+            <div className="header-center-info">
+              {matchHeader && <div className="header-match-date">📅 {matchHeader}</div>}
+              <div className="header-player-count">
+                👥 {teams.team1.length + teams.team2.length + teams.reserves.length} Jugadores
+              </div>
+            </div>
+          )}
+
           <nav className="header-actions">
+            {teams && (
+              <>
+                <button className="header-btn" onClick={handleRebalance}>
+                  ⚖️ Re-equilibrar
+                </button>
+                <button 
+                  className="header-btn" 
+                  style={{ borderColor: savedFeedback.all ? 'var(--accent-green)' : '', color: savedFeedback.all ? 'var(--accent-green)' : '' }}
+                  onClick={handleSaveAllPlayers}
+                >
+                  {savedFeedback.all ? '✓' : '💾'} Guardar
+                </button>
+                <button className="header-btn" onClick={copyToClipboard}>
+                  📱 Copiar
+                </button>
+              </>
+            )}
             <button className="header-btn" onClick={handleReset}>
               <span className="btn-icon">🗑️</span> Limpiar
             </button>
@@ -292,11 +340,6 @@ Miércoles 18:00
             
             {teams ? (
               <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                {matchHeader && (
-                  <div className="match-header-display">
-                    📅 {matchHeader}
-                  </div>
-                )}
                 
                 <div className="teams-grid">
                   <div 
@@ -430,15 +473,6 @@ Miércoles 18:00
                     </ul>
                   </div>
                 )}
-
-                <div className="button-group" style={{ marginTop: 'auto' }}>
-                  <button className="btn" onClick={handleRebalance}>
-                    Re-equilibrar ⚖️
-                  </button>
-                  <button className="btn btn-secondary" style={{ marginTop: 0 }} onClick={copyToClipboard}>
-                    Copiar para WhatsApp 📱
-                  </button>
-                </div>
               </div>
             ) : (
               <div className="placeholder-text">
