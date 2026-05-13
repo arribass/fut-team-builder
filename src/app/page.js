@@ -241,6 +241,40 @@ export default function Home() {
     setPitchDraggedItem(null);
   };
 
+  const handlePlayerDrop = (e, targetTeam, targetIndex) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!pitchDraggedItem) return;
+
+    const { team: sourceTeam, index: sourceIndex } = pitchDraggedItem;
+    
+    setTeams(prev => {
+      const newTeams = { team1: [...prev.team1], team2: [...prev.team2], reserves: [...prev.reserves] };
+      if (sourceTeam === targetTeam && sourceIndex === targetIndex) return prev;
+
+      const movedPlayer = { ...newTeams[sourceTeam][sourceIndex] };
+      const targetPlayer = { ...newTeams[targetTeam][targetIndex] };
+
+      const tempPos = movedPlayer.position;
+      const tempSide = movedPlayer.side;
+      const tempSlotId = movedPlayer.slotId;
+
+      movedPlayer.position = targetPlayer.position;
+      movedPlayer.side = targetPlayer.side;
+      movedPlayer.slotId = targetPlayer.slotId;
+
+      targetPlayer.position = tempPos;
+      targetPlayer.side = tempSide;
+      targetPlayer.slotId = tempSlotId;
+
+      newTeams[targetTeam][targetIndex] = targetPlayer;
+      newTeams[sourceTeam][sourceIndex] = movedPlayer;
+
+      return newTeams;
+    });
+    setPitchDraggedItem(null);
+  };
+
   const handlePitchDrop = (e) => {
     e.preventDefault();
     if (!pitchDraggedItem) return;
@@ -727,6 +761,8 @@ Miércoles 18:00
                   style={style}
                   draggable="true"
                   onDragStart={(e) => handlePitchDragStart(e, 'team1', i)}
+                  onDragOver={handlePitchDragOver}
+                  onDrop={(e) => handlePlayerDrop(e, 'team1', i)}
                 >
                   <div className="player-dot"></div>
                   <span className="pitch-player-name">{p.name}</span>
@@ -743,6 +779,8 @@ Miércoles 18:00
                   style={style}
                   draggable="true"
                   onDragStart={(e) => handlePitchDragStart(e, 'team2', i)}
+                  onDragOver={handlePitchDragOver}
+                  onDrop={(e) => handlePlayerDrop(e, 'team2', i)}
                 >
                   <div className="player-dot"></div>
                   <span className="pitch-player-name">{p.name}</span>
