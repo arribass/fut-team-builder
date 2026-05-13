@@ -4,6 +4,13 @@ import { useState } from 'react';
 import { parsePlayers, balanceTeams, parseHeader } from '@/lib/balancer';
 
 const getPlayerStyle = (teamNum, p, allPlayersInTeam) => {
+  if (!p.position) {
+    const reserves = allPlayersInTeam.filter(op => !op.position);
+    const index = reserves.findIndex(op => op.name === p.name);
+    const x = teamNum === 1 ? (10 + index * 6) : (90 - index * 6);
+    return { left: `${x}%`, top: `94%` };
+  }
+
   let x = teamNum === 1 ? 25 : 75;
   let y = 50;
 
@@ -166,6 +173,57 @@ export default function Home() {
     });
   };
 
+  const handleRandomFormation = () => {
+    if (!teams) return;
+
+    const formations = [
+      [ // 4-4-2
+        { position: 'POR', side: null },
+        { position: 'DEF', side: 'IZD' },
+        { position: 'DEF', side: 'DCHA' },
+        { position: 'DEF', side: null },
+        { position: 'DEF', side: null },
+        { position: 'MED', side: 'IZD' },
+        { position: 'MED', side: 'DCHA' },
+        { position: 'MED', side: null },
+        { position: 'MED', side: null },
+        { position: 'ATQ', side: null },
+        { position: 'ATQ', side: null },
+      ],
+      [ // 4-3-3
+        { position: 'POR', side: null },
+        { position: 'DEF', side: 'IZD' },
+        { position: 'DEF', side: 'DCHA' },
+        { position: 'DEF', side: null },
+        { position: 'DEF', side: null },
+        { position: 'MED', side: null },
+        { position: 'MED', side: null },
+        { position: 'MED', side: null },
+        { position: 'ATQ', side: 'IZD' },
+        { position: 'ATQ', side: 'DCHA' },
+        { position: 'ATQ', side: null },
+      ]
+    ];
+
+    const applyFormation = (teamArray) => {
+      const formation = formations[Math.floor(Math.random() * formations.length)];
+      const shuffled = [...teamArray].sort(() => Math.random() - 0.5);
+      
+      return shuffled.map((p, i) => {
+        if (i < formation.length) {
+          return { ...p, position: formation[i].position, side: formation[i].side };
+        }
+        return { ...p, position: null, side: null };
+      });
+    };
+
+    setTeams(prev => ({
+      ...prev,
+      team1: applyFormation(prev.team1),
+      team2: applyFormation(prev.team2),
+    }));
+  };
+
   const copyToClipboard = () => {
     if (!teams) return;
 
@@ -267,6 +325,9 @@ R2. Pierre`;
           <nav className="header-actions">
             {teams && (
               <>
+                <button className="header-btn" onClick={handleRandomFormation}>
+                  🎲 Formación Aleatoria
+                </button>
                 <button className="header-btn" onClick={handleRebalance}>
                   ⚖️ Re-equilibrar
                 </button>
