@@ -3,7 +3,49 @@
 import { useState } from 'react';
 import { parsePlayers, balanceTeams, parseHeader } from '@/lib/balancer';
 
-const getPlayerStyle = (teamNum, p, allPlayersInTeam) => {
+const PITCH_FORMATIONS = {
+  '4-4-2': [
+    { id: 'por', position: 'POR', side: null, x: 5, y: 50 },
+    { id: 'def-izd', position: 'DEF', side: 'IZD', x: 20, y: 15 },
+    { id: 'def-c1', position: 'DEF', side: null, x: 18, y: 38 },
+    { id: 'def-c2', position: 'DEF', side: null, x: 18, y: 62 },
+    { id: 'def-dcha', position: 'DEF', side: 'DCHA', x: 20, y: 85 },
+    { id: 'med-izd', position: 'MED', side: 'IZD', x: 38, y: 15 },
+    { id: 'med-c1', position: 'MED', side: null, x: 36, y: 38 },
+    { id: 'med-c2', position: 'MED', side: null, x: 36, y: 62 },
+    { id: 'med-dcha', position: 'MED', side: 'DCHA', x: 38, y: 85 },
+    { id: 'atq-1', position: 'ATQ', side: null, x: 46, y: 40 },
+    { id: 'atq-2', position: 'ATQ', side: null, x: 46, y: 60 },
+  ],
+  '4-3-3': [
+    { id: 'por', position: 'POR', side: null, x: 5, y: 50 },
+    { id: 'def-izd', position: 'DEF', side: 'IZD', x: 20, y: 15 },
+    { id: 'def-c1', position: 'DEF', side: null, x: 18, y: 38 },
+    { id: 'def-c2', position: 'DEF', side: null, x: 18, y: 62 },
+    { id: 'def-dcha', position: 'DEF', side: 'DCHA', x: 20, y: 85 },
+    { id: 'med-izd', position: 'MED', side: 'IZD', x: 35, y: 25 },
+    { id: 'med-c', position: 'MED', side: null, x: 32, y: 50 },
+    { id: 'med-dcha', position: 'MED', side: 'DCHA', x: 35, y: 75 },
+    { id: 'atq-izd', position: 'ATQ', side: 'IZD', x: 48, y: 20 },
+    { id: 'atq-c', position: 'ATQ', side: null, x: 48, y: 50 },
+    { id: 'atq-dcha', position: 'ATQ', side: 'DCHA', x: 48, y: 80 },
+  ],
+  '3-5-2': [
+    { id: 'por', position: 'POR', side: null, x: 5, y: 50 },
+    { id: 'def-izd', position: 'DEF', side: 'IZD', x: 18, y: 20 },
+    { id: 'def-c', position: 'DEF', side: null, x: 15, y: 50 },
+    { id: 'def-dcha', position: 'DEF', side: 'DCHA', x: 18, y: 80 },
+    { id: 'med-izd', position: 'MED', side: 'IZD', x: 35, y: 15 },
+    { id: 'med-ci', position: 'MED', side: null, x: 32, y: 35 },
+    { id: 'med-c', position: 'MED', side: null, x: 30, y: 50 },
+    { id: 'med-cd', position: 'MED', side: null, x: 32, y: 65 },
+    { id: 'med-dcha', position: 'MED', side: 'DCHA', x: 35, y: 85 },
+    { id: 'atq-1', position: 'ATQ', side: null, x: 46, y: 40 },
+    { id: 'atq-2', position: 'ATQ', side: null, x: 46, y: 60 },
+  ],
+};
+
+const getPlayerStyle = (teamNum, p, formationName, allPlayersInTeam) => {
   if (!p.position) {
     const reserves = allPlayersInTeam.filter(op => !op.position);
     const index = reserves.findIndex(op => op.name === p.name);
@@ -11,29 +53,41 @@ const getPlayerStyle = (teamNum, p, allPlayersInTeam) => {
     return { left: `${x}%`, top: `94%` };
   }
 
-  let x = teamNum === 1 ? 25 : 75;
-  let y = 50;
+  const formation = PITCH_FORMATIONS[formationName] || PITCH_FORMATIONS['4-4-2'];
+  let slot = null;
 
-  if (p.position === 'POR') x = teamNum === 1 ? 5 : 95;
-  else if (p.position === 'DEF') x = teamNum === 1 ? 20 : 80;
-  else if (p.position === 'MED') x = teamNum === 1 ? 40 : 60;
-  else if (p.position === 'ATQ') x = teamNum === 1 ? 48 : 52;
-
-  if (p.side === 'IZD') y = 15;
-  else if (p.side === 'DCHA') y = 85;
-  else y = 50;
-
-  const similarPlayers = allPlayersInTeam.filter(
-    op => op.position === p.position && op.side === p.side
-  );
-  if (similarPlayers.length > 1) {
-    const simIndex = similarPlayers.findIndex(op => op.name === p.name);
-    const offset = (simIndex - (similarPlayers.length - 1) / 2) * 20;
-    y += offset;
+  if (p.slotId) {
+    slot = formation.find(s => s.id === p.slotId);
+    if (slot && (slot.position !== p.position || slot.side !== p.side)) {
+      slot = null;
+    }
   }
 
-  y = Math.max(5, Math.min(95, y));
-  return { left: `${x}%`, top: `${y}%` };
+  if (!slot) {
+    const matchingSlots = formation.filter(s => s.position === p.position && s.side === p.side);
+    if (matchingSlots.length > 0) {
+      const matchingPlayers = allPlayersInTeam.filter(op => op.position === p.position && op.side === p.side);
+      const myIndex = matchingPlayers.findIndex(op => op.name === p.name);
+      slot = matchingSlots[myIndex % matchingSlots.length];
+    }
+  }
+
+  if (slot) {
+    const x = teamNum === 1 ? slot.x : 100 - slot.x;
+    return { left: `${x}%`, top: `${slot.y}%` };
+  }
+
+  let fallbackX = teamNum === 1 ? 25 : 75;
+  if (p.position === 'POR') fallbackX = teamNum === 1 ? 5 : 95;
+  else if (p.position === 'DEF') fallbackX = teamNum === 1 ? 20 : 80;
+  else if (p.position === 'MED') fallbackX = teamNum === 1 ? 40 : 60;
+  else if (p.position === 'ATQ') fallbackX = teamNum === 1 ? 48 : 52;
+
+  let y = 50;
+  if (p.side === 'IZD') y = 15;
+  else if (p.side === 'DCHA') y = 85;
+
+  return { left: `${fallbackX}%`, top: `${y}%` };
 };
 
 export default function Home() {
@@ -44,11 +98,14 @@ export default function Home() {
   const [draggedItem, setDraggedItem] = useState(null);
   const [dragOverTeam, setDragOverTeam] = useState(null);
   const [pitchDraggedItem, setPitchDraggedItem] = useState(null);
+  const [orgId, setOrgId] = useState('default');
   const [savedFeedback, setSavedFeedback] = useState({});
+  const [team1Formation, setTeam1Formation] = useState('4-4-2');
+  const [team2Formation, setTeam2Formation] = useState('4-4-2');
 
   const loadPreferences = () => {
     try {
-      const data = localStorage.getItem('fut-builder-players');
+      const data = localStorage.getItem(`fut-builder-players-${orgId || 'default'}`);
       return data ? JSON.parse(data) : {};
     } catch (e) {
       return {};
@@ -59,7 +116,7 @@ export default function Home() {
     try {
       const prefs = loadPreferences();
       prefs[p.name] = { position: p.position, side: p.side };
-      localStorage.setItem('fut-builder-players', JSON.stringify(prefs));
+      localStorage.setItem(`fut-builder-players-${orgId || 'default'}`, JSON.stringify(prefs));
       
       setSavedFeedback(prev => ({ ...prev, [p.name]: true }));
       setTimeout(() => {
@@ -80,7 +137,7 @@ export default function Home() {
           prefs[p.name] = { position: p.position, side: p.side };
         }
       });
-      localStorage.setItem('fut-builder-players', JSON.stringify(prefs));
+      localStorage.setItem(`fut-builder-players-${orgId || 'default'}`, JSON.stringify(prefs));
       
       setSavedFeedback(prev => ({ ...prev, all: true }));
       setTimeout(() => {
@@ -149,50 +206,60 @@ export default function Home() {
     e.dataTransfer.dropEffect = 'move';
   };
 
+  const handleSlotDrop = (e, targetTeam, slot) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!pitchDraggedItem) return;
+    
+    const { team: sourceTeam, index: sourceIndex } = pitchDraggedItem;
+    
+    setTeams(prev => {
+      const newTeams = { team1: [...prev.team1], team2: [...prev.team2], reserves: [...prev.reserves] };
+      const movedPlayer = { ...newTeams[sourceTeam][sourceIndex] };
+      
+      const existingOccupantIndex = newTeams[targetTeam].findIndex(p => p.slotId === slot.id || (
+        p.position === slot.position && p.side === slot.side && !p.slotId
+      ));
+      
+      if (existingOccupantIndex !== -1 && (sourceTeam !== targetTeam || existingOccupantIndex !== sourceIndex)) {
+        const occupant = { ...newTeams[targetTeam][existingOccupantIndex] };
+        occupant.position = movedPlayer.position;
+        occupant.side = movedPlayer.side;
+        occupant.slotId = movedPlayer.slotId;
+        newTeams[targetTeam][existingOccupantIndex] = occupant;
+      }
+      
+      movedPlayer.position = slot.position;
+      movedPlayer.side = slot.side;
+      movedPlayer.slotId = slot.id;
+      
+      newTeams[sourceTeam].splice(sourceIndex, 1);
+      newTeams[targetTeam].push(movedPlayer);
+      
+      return newTeams;
+    });
+    setPitchDraggedItem(null);
+  };
+
   const handlePitchDrop = (e) => {
     e.preventDefault();
     if (!pitchDraggedItem) return;
     
     const rect = e.currentTarget.getBoundingClientRect();
-    const x = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
     const y = Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100));
     
-    setTeams(prev => {
-      const newTeams = { ...prev };
-      const { team, index } = pitchDraggedItem;
-
-      let newPosition = null;
-      let newSide = null;
-
-      if (team === 'team1') {
-        if (x < 15) newPosition = 'POR';
-        else if (x < 30) newPosition = 'DEF';
-        else if (x < 44) newPosition = 'MED';
-        else newPosition = 'ATQ';
-      } else {
-        if (x > 85) newPosition = 'POR';
-        else if (x > 70) newPosition = 'DEF';
-        else if (x > 56) newPosition = 'MED';
-        else newPosition = 'ATQ';
-      }
-
-      if (y < 35) newSide = 'IZD';
-      else if (y > 65) newSide = 'DCHA';
-
-      if (y > 90) {
-        newPosition = null;
-        newSide = null;
-      }
-
-      newTeams[team][index] = {
-        ...newTeams[team][index],
-        customX: x,
-        customY: y,
-        position: newPosition,
-        side: newSide
-      };
-      return newTeams;
-    });
+    if (y > 90) { // Bench area
+      setTeams(prev => {
+        const newTeams = { team1: [...prev.team1], team2: [...prev.team2], reserves: [...prev.reserves] };
+        const { team: sourceTeam, index: sourceIndex } = pitchDraggedItem;
+        const [movedPlayer] = newTeams[sourceTeam].splice(sourceIndex, 1);
+        movedPlayer.position = null;
+        movedPlayer.side = null;
+        movedPlayer.slotId = undefined;
+        newTeams[sourceTeam].push(movedPlayer);
+        return newTeams;
+      });
+    }
     setPitchDraggedItem(null);
   };
 
@@ -231,7 +298,8 @@ export default function Home() {
         ...newTeams[teamName][index], 
         [field]: currentValue === value ? null : value,
         customX: undefined,
-        customY: undefined
+        customY: undefined,
+        slotId: undefined
       };
       return newTeams;
     });
@@ -240,51 +308,29 @@ export default function Home() {
   const handleRandomFormation = () => {
     if (!teams) return;
 
-    const formations = [
-      [ // 4-4-2
-        { position: 'POR', side: null },
-        { position: 'DEF', side: 'IZD' },
-        { position: 'DEF', side: 'DCHA' },
-        { position: 'DEF', side: null },
-        { position: 'DEF', side: null },
-        { position: 'MED', side: 'IZD' },
-        { position: 'MED', side: 'DCHA' },
-        { position: 'MED', side: null },
-        { position: 'MED', side: null },
-        { position: 'ATQ', side: null },
-        { position: 'ATQ', side: null },
-      ],
-      [ // 4-3-3
-        { position: 'POR', side: null },
-        { position: 'DEF', side: 'IZD' },
-        { position: 'DEF', side: 'DCHA' },
-        { position: 'DEF', side: null },
-        { position: 'DEF', side: null },
-        { position: 'MED', side: null },
-        { position: 'MED', side: null },
-        { position: 'MED', side: null },
-        { position: 'ATQ', side: 'IZD' },
-        { position: 'ATQ', side: 'DCHA' },
-        { position: 'ATQ', side: null },
-      ]
-    ];
+    const available = Object.keys(PITCH_FORMATIONS);
 
-    const applyFormation = (teamArray) => {
-      const formation = formations[Math.floor(Math.random() * formations.length)];
+    const applyFormation = (teamArray, formName) => {
+      const formation = PITCH_FORMATIONS[formName];
       const shuffled = [...teamArray].sort(() => Math.random() - 0.5);
       
       return shuffled.map((p, i) => {
         if (i < formation.length) {
-          return { ...p, position: formation[i].position, side: formation[i].side, customX: undefined, customY: undefined };
+          return { ...p, position: formation[i].position, side: formation[i].side, slotId: formation[i].id };
         }
-        return { ...p, position: null, side: null, customX: undefined, customY: undefined };
+        return { ...p, position: null, side: null, slotId: undefined };
       });
     };
 
+    const f1 = available[Math.floor(Math.random() * available.length)];
+    const f2 = available[Math.floor(Math.random() * available.length)];
+    setTeam1Formation(f1);
+    setTeam2Formation(f2);
+
     setTeams(prev => ({
       ...prev,
-      team1: applyFormation(prev.team1),
-      team2: applyFormation(prev.team2),
+      team1: applyFormation(prev.team1, f1),
+      team2: applyFormation(prev.team2, f2),
     }));
   };
 
@@ -443,6 +489,19 @@ Miércoles 18:00
                 min="1"
                 max="20"
                 className="team-size-input"
+              />
+            </div>
+
+            <div className="team-size-config" style={{ marginTop: '0.5rem' }}>
+              <label htmlFor="orgId">ID de Grupo/Org:</label>
+              <input 
+                type="text" 
+                id="orgId" 
+                value={orgId} 
+                onChange={(e) => setOrgId(e.target.value)}
+                className="team-size-input"
+                style={{ width: '120px', textAlign: 'left' }}
+                placeholder="Ej: Lunes F11"
               />
             </div>
 
@@ -610,7 +669,21 @@ Miércoles 18:00
 
       {teams && (
         <div className="pitch-section">
-          <h2 className="team-title" style={{ justifyContent: 'center', marginBottom: '1.5rem', width: '100%' }}>Pizarra Táctica 📋</h2>
+          <div className="pitch-header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
+            <div className="formation-selector" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <label style={{ fontWeight: 600, color: '#ef4444' }}>Formación Rojo: </label>
+              <select value={team1Formation} onChange={e => setTeam1Formation(e.target.value)} className="team-size-input" style={{ width: 'auto' }}>
+                {Object.keys(PITCH_FORMATIONS).map(f => <option key={f} value={f}>{f}</option>)}
+              </select>
+            </div>
+            <h2 className="team-title" style={{ margin: 0 }}>Pizarra Táctica 📋</h2>
+            <div className="formation-selector" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <label style={{ fontWeight: 600, color: '#f3f4f6' }}>Formación Blanco: </label>
+              <select value={team2Formation} onChange={e => setTeam2Formation(e.target.value)} className="team-size-input" style={{ width: 'auto' }}>
+                {Object.keys(PITCH_FORMATIONS).map(f => <option key={f} value={f}>{f}</option>)}
+              </select>
+            </div>
+          </div>
           <div 
             className="pitch-container"
             onDragOver={handlePitchDragOver}
@@ -622,11 +695,31 @@ Miércoles 18:00
               <div className="pitch-penalty-left"></div>
               <div className="pitch-penalty-right"></div>
             </div>
+
+            {/* Slots for Team 1 */}
+            {PITCH_FORMATIONS[team1Formation].map(slot => (
+              <div 
+                key={`slot-t1-${slot.id}`}
+                className="pitch-slot"
+                style={{ left: `${slot.x}%`, top: `${slot.y}%` }}
+                onDragOver={handlePitchDragOver}
+                onDrop={(e) => handleSlotDrop(e, 'team1', slot)}
+              />
+            ))}
+            
+            {/* Slots for Team 2 */}
+            {PITCH_FORMATIONS[team2Formation].map(slot => (
+              <div 
+                key={`slot-t2-${slot.id}`}
+                className="pitch-slot"
+                style={{ left: `${100 - slot.x}%`, top: `${slot.y}%` }}
+                onDragOver={handlePitchDragOver}
+                onDrop={(e) => handleSlotDrop(e, 'team2', slot)}
+              />
+            ))}
             
             {teams.team1.map((p, i) => {
-              const style = (p.customX !== undefined && p.customY !== undefined)
-                ? { left: `${p.customX}%`, top: `${p.customY}%` }
-                : getPlayerStyle(1, p, teams.team1);
+              const style = getPlayerStyle(1, p, team1Formation, teams.team1);
               return (
                 <div 
                   key={`pitch-t1-${p.name}`} 
@@ -642,9 +735,7 @@ Miércoles 18:00
             })}
             
             {teams.team2.map((p, i) => {
-              const style = (p.customX !== undefined && p.customY !== undefined)
-                ? { left: `${p.customX}%`, top: `${p.customY}%` }
-                : getPlayerStyle(2, p, teams.team2);
+              const style = getPlayerStyle(2, p, team2Formation, teams.team2);
               return (
                 <div 
                   key={`pitch-t2-${p.name}`} 

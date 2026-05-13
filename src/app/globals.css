@@ -627,3 +627,20 @@ textarea::placeholder {
   backdrop-filter: blur(4px);
 }
 
+.pitch-slot {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  transform: translate(-50%, -50%);
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  z-index: 5;
+  transition: all 0.2s ease;
+}
+
+.pitch-slot:hover, .pitch-slot:active {
+  border-color: var(--accent-green);
+  background: rgba(34, 197, 94, 0.2);
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
