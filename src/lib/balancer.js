@@ -57,10 +57,13 @@ export function parsePlayers(text) {
     // Detect reserves
     const isReserve = trimmed.match(/^(R[0-9]|Reserva)/i) !== null;
 
-    // Clean name: remove "1. ", "R1. ", etc.
+    // Clean name: remove "1. ", "R1. ", etc. and content in parentheses
     let name = trimmed
       .replace(/^[0-9]+[\.\s-]+/, '') // remove leading counters like "1. "
       .replace(/^(R[0-9]+|Reserva)[\.\s-]+/i, '') // remove reserve prefix
+      .replace(/\(.*?\)/g, '') // remove content in parentheses
+      .replace(/[.,\s]+$/, '') // remove trailing punctuation and spaces
+      .replace(/\s+/g, ' ') // collapse multiple spaces
       .trim();
 
     if (name && name.length > 1) { // Basic check to avoid stray chars
