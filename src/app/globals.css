@@ -225,6 +225,11 @@ textarea::placeholder {
   border-color: var(--accent-blue);
 }
 
+.team-size-input option {
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+}
+
 .btn {
   background: linear-gradient(135deg, var(--accent-green), #16a34a);
   color: white;

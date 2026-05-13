@@ -50,11 +50,12 @@ const getPlayerStyle = (teamNum, p, formationName, allPlayersInTeam) => {
     const reserves = allPlayersInTeam.filter(op => !op.position);
     const index = reserves.findIndex(op => op.name === p.name);
     const x = teamNum === 1 ? (10 + index * 6) : (90 - index * 6);
-    return { left: `${x}%`, top: `94%` };
+    return { left: `${x}%`, top: `94%`, zIndex: 10 + index };
   }
 
   const formation = PITCH_FORMATIONS[formationName] || PITCH_FORMATIONS['4-4-2'];
   let slot = null;
+  let overlapLevel = 0;
 
   if (p.slotId) {
     slot = formation.find(s => s.id === p.slotId);
@@ -66,28 +67,46 @@ const getPlayerStyle = (teamNum, p, formationName, allPlayersInTeam) => {
   if (!slot) {
     const matchingSlots = formation.filter(s => s.position === p.position && s.side === p.side);
     if (matchingSlots.length > 0) {
-      const matchingPlayers = allPlayersInTeam.filter(op => op.position === p.position && op.side === p.side);
+      const matchingPlayers = allPlayersInTeam.filter(op => op.position === p.position && op.side === p.side && !op.slotId);
       const myIndex = matchingPlayers.findIndex(op => op.name === p.name);
       slot = matchingSlots[myIndex % matchingSlots.length];
+      overlapLevel = Math.floor(myIndex / matchingSlots.length);
     }
   }
 
+  let x, y;
+
   if (slot) {
-    const x = teamNum === 1 ? slot.x : 100 - slot.x;
-    return { left: `${x}%`, top: `${slot.y}%` };
+    x = teamNum === 1 ? slot.x : 100 - slot.x;
+    y = slot.y;
+  } else {
+    x = teamNum === 1 ? 25 : 75;
+    if (p.position === 'POR') x = teamNum === 1 ? 5 : 95;
+    else if (p.position === 'DEF') x = teamNum === 1 ? 20 : 80;
+    else if (p.position === 'MED') x = teamNum === 1 ? 40 : 60;
+    else if (p.position === 'ATQ') x = teamNum === 1 ? 48 : 52;
+
+    y = 50;
+    if (p.side === 'IZD') y = 15;
+    else if (p.side === 'DCHA') y = 85;
+
+    const matchingFallbackPlayers = allPlayersInTeam.filter(op => 
+      op.position === p.position && op.side === p.side && !op.slotId &&
+      formation.filter(s => s.position === p.position && s.side === p.side).length === 0
+    );
+    const myIndex = matchingFallbackPlayers.findIndex(op => op.name === p.name);
+    overlapLevel = Math.max(0, myIndex);
   }
 
-  let fallbackX = teamNum === 1 ? 25 : 75;
-  if (p.position === 'POR') fallbackX = teamNum === 1 ? 5 : 95;
-  else if (p.position === 'DEF') fallbackX = teamNum === 1 ? 20 : 80;
-  else if (p.position === 'MED') fallbackX = teamNum === 1 ? 40 : 60;
-  else if (p.position === 'ATQ') fallbackX = teamNum === 1 ? 48 : 52;
+  if (overlapLevel > 0) {
+    return { 
+      left: `calc(${x}% + ${overlapLevel * 12}px)`, 
+      top: `calc(${y}% - ${overlapLevel * 12}px)`,
+      zIndex: 10 + overlapLevel 
+    };
+  }
 
-  let y = 50;
-  if (p.side === 'IZD') y = 15;
-  else if (p.side === 'DCHA') y = 85;
-
-  return { left: `${fallbackX}%`, top: `${y}%` };
+  return { left: `${x}%`, top: `${y}%`, zIndex: 10 };
 };
 
 export default function Home() {
@@ -117,7 +136,7 @@ export default function Home() {
       const prefs = loadPreferences();
       prefs[p.name] = { position: p.position, side: p.side };
       localStorage.setItem(`fut-builder-players-${orgId || 'default'}`, JSON.stringify(prefs));
-      
+
       setSavedFeedback(prev => ({ ...prev, [p.name]: true }));
       setTimeout(() => {
         setSavedFeedback(prev => ({ ...prev, [p.name]: false }));
@@ -138,7 +157,7 @@ export default function Home() {
         }
       });
       localStorage.setItem(`fut-builder-players-${orgId || 'default'}`, JSON.stringify(prefs));
-      
+
       setSavedFeedback(prev => ({ ...prev, all: true }));
       setTimeout(() => {
         setSavedFeedback(prev => ({ ...prev, all: false }));
@@ -183,14 +202,14 @@ export default function Home() {
         team2: [...prevTeams.team2],
         reserves: [...prevTeams.reserves]
       };
-      
+
       const [movedPlayer] = newTeams[sourceTeam].splice(sourceIndex, 1);
       // Remove custom coordinates when moving between lists
       movedPlayer.customX = undefined;
       movedPlayer.customY = undefined;
-      
+
       newTeams[targetTeam].push(movedPlayer);
-      
+
       return newTeams;
     });
     setDraggedItem(null);
@@ -210,17 +229,17 @@ export default function Home() {
     e.preventDefault();
     e.stopPropagation();
     if (!pitchDraggedItem) return;
-    
+
     const { team: sourceTeam, index: sourceIndex } = pitchDraggedItem;
-    
+
     setTeams(prev => {
       const newTeams = { team1: [...prev.team1], team2: [...prev.team2], reserves: [...prev.reserves] };
       const movedPlayer = { ...newTeams[sourceTeam][sourceIndex] };
-      
+
       const existingOccupantIndex = newTeams[targetTeam].findIndex(p => p.slotId === slot.id || (
         p.position === slot.position && p.side === slot.side && !p.slotId
       ));
-      
+
       if (existingOccupantIndex !== -1 && (sourceTeam !== targetTeam || existingOccupantIndex !== sourceIndex)) {
         const occupant = { ...newTeams[targetTeam][existingOccupantIndex] };
         occupant.position = movedPlayer.position;
@@ -228,14 +247,14 @@ export default function Home() {
         occupant.slotId = movedPlayer.slotId;
         newTeams[targetTeam][existingOccupantIndex] = occupant;
       }
-      
+
       movedPlayer.position = slot.position;
       movedPlayer.side = slot.side;
       movedPlayer.slotId = slot.id;
-      
+
       newTeams[sourceTeam].splice(sourceIndex, 1);
       newTeams[targetTeam].push(movedPlayer);
-      
+
       return newTeams;
     });
     setPitchDraggedItem(null);
@@ -247,7 +266,7 @@ export default function Home() {
     if (!pitchDraggedItem) return;
 
     const { team: sourceTeam, index: sourceIndex } = pitchDraggedItem;
-    
+
     setTeams(prev => {
       const newTeams = { team1: [...prev.team1], team2: [...prev.team2], reserves: [...prev.reserves] };
       if (sourceTeam === targetTeam && sourceIndex === targetIndex) return prev;
@@ -278,10 +297,10 @@ export default function Home() {
   const handlePitchDrop = (e) => {
     e.preventDefault();
     if (!pitchDraggedItem) return;
-    
+
     const rect = e.currentTarget.getBoundingClientRect();
     const y = Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100));
-    
+
     if (y > 90) { // Bench area
       setTeams(prev => {
         const newTeams = { team1: [...prev.team1], team2: [...prev.team2], reserves: [...prev.reserves] };
@@ -301,7 +320,7 @@ export default function Home() {
     const players = parsePlayers(inputText);
     const header = parseHeader(inputText);
     setMatchHeader(header);
-    
+
     if (players.length > 0) {
       const prefs = loadPreferences();
       const playersWithPrefs = players.map(p => {
@@ -328,8 +347,8 @@ export default function Home() {
       newTeams[teamName] = [...prev[teamName]];
       // Toggle off if same value is clicked
       const currentValue = newTeams[teamName][index][field];
-      newTeams[teamName][index] = { 
-        ...newTeams[teamName][index], 
+      newTeams[teamName][index] = {
+        ...newTeams[teamName][index],
         [field]: currentValue === value ? null : value,
         customX: undefined,
         customY: undefined,
@@ -347,7 +366,7 @@ export default function Home() {
     const applyFormation = (teamArray, formName) => {
       const formation = PITCH_FORMATIONS[formName];
       const shuffled = [...teamArray].sort(() => Math.random() - 0.5);
-      
+
       return shuffled.map((p, i) => {
         if (i < formation.length) {
           return { ...p, position: formation[i].position, side: formation[i].side, slotId: formation[i].id };
@@ -374,7 +393,7 @@ export default function Home() {
     let text = `⚽ *Fut Team Balancer*\n`;
     if (matchHeader) text += `📅 ${matchHeader}\n`;
     text += `\n`;
-    
+
     text += `🔴 *EQUIPO ROJO*\n`;
     teams.team1.forEach(p => {
       let info = [];
@@ -383,7 +402,7 @@ export default function Home() {
       const suffix = info.length > 0 ? ` [${info.join(' ')}]` : '';
       text += `• ${p.name}${suffix}\n`;
     });
-    
+
     text += `\n⚪ *EQUIPO BLANCO*\n`;
     teams.team2.forEach(p => {
       let info = [];
@@ -456,7 +475,7 @@ R2. Pierre`;
             <span className="logo-emoji">⚽</span>
             <span className="logo-text">FUT<span className="logo-highlight">BUILDER</span></span>
           </div>
-          
+
           {teams && (
             <div className="header-center-info">
               {matchHeader && <div className="header-match-date">📅 {matchHeader}</div>}
@@ -475,8 +494,8 @@ R2. Pierre`;
                 <button className="header-btn" onClick={handleRebalance}>
                   ⚖️ Re-equilibrar
                 </button>
-                <button 
-                  className="header-btn" 
+                <button
+                  className="header-btn"
                   style={{ borderColor: savedFeedback.all ? 'var(--accent-green)' : '', color: savedFeedback.all ? 'var(--accent-green)' : '' }}
                   onClick={handleSaveAllPlayers}
                 >
@@ -512,13 +531,13 @@ Miércoles 18:00
                 onChange={(e) => setInputText(e.target.value)}
               />
             </div>
-            
+
             <div className="team-size-config">
               <label htmlFor="teamSize">Jugadores por equipo:</label>
-              <input 
-                type="number" 
-                id="teamSize" 
-                value={teamSize} 
+              <input
+                type="number"
+                id="teamSize"
+                value={teamSize}
                 onChange={(e) => setTeamSize(Number(e.target.value))}
                 min="1"
                 max="20"
@@ -528,10 +547,10 @@ Miércoles 18:00
 
             <div className="team-size-config" style={{ marginTop: '0.5rem' }}>
               <label htmlFor="orgId">ID de Grupo/Org:</label>
-              <input 
-                type="text" 
-                id="orgId" 
-                value={orgId} 
+              <input
+                type="text"
+                id="orgId"
+                value={orgId}
                 onChange={(e) => setOrgId(e.target.value)}
                 className="team-size-input"
                 style={{ width: '120px', textAlign: 'left' }}
@@ -555,12 +574,12 @@ Miércoles 18:00
         <div className="right-panel">
           <div className="card">
             <h2 className="team-title">Equipos Generados</h2>
-            
+            <br />
             {teams ? (
               <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                
+
                 <div className="teams-grid">
-                  <div 
+                  <div
                     className={`team-column ${dragOverTeam === 'team1' ? 'drag-over' : ''} ${teams.team1.length >= teamSize ? 'team-complete' : 'team-incomplete'}`}
                     onDragOver={(e) => handleDragOver(e, 'team1')}
                     onDragLeave={handleDragLeave}
@@ -574,9 +593,9 @@ Miércoles 18:00
                     </div>
                     <ul className="player-list">
                       {teams.team1.map((p, i) => (
-                        <li 
-                          key={`team1-${i}-${p.name}`} 
-                          className="player-item" 
+                        <li
+                          key={`team1-${i}-${p.name}`}
+                          className="player-item"
                           style={{ animationDelay: `${i * 0.05}s` }}
                           draggable="true"
                           onDragStart={(e) => handleDragStart(e, 'team1', i)}
@@ -585,8 +604,8 @@ Miércoles 18:00
                           <div className="player-toggles">
                             <div className="toggle-group">
                               {['DEF', 'MED', 'ATQ'].map(pos => (
-                                <button 
-                                  key={pos} 
+                                <button
+                                  key={pos}
                                   className={`pos-badge ${p.position === pos ? 'active' : ''}`}
                                   onClick={() => handleUpdatePlayer('team1', i, 'position', pos)}
                                 >{pos}</button>
@@ -594,14 +613,14 @@ Miércoles 18:00
                             </div>
                             <div className="toggle-group">
                               {['IZD', 'DCHA'].map(side => (
-                                <button 
-                                  key={side} 
+                                <button
+                                  key={side}
                                   className={`side-badge ${p.side === side ? 'active' : ''}`}
                                   onClick={() => handleUpdatePlayer('team1', i, 'side', side)}
                                 >{side}</button>
                               ))}
                             </div>
-                            <button 
+                            <button
                               className={`save-badge ${savedFeedback[p.name] ? 'saved' : ''}`}
                               onClick={() => handleSavePlayer(p)}
                               title="Guardar preferencias"
@@ -613,7 +632,7 @@ Miércoles 18:00
                       ))}
                     </ul>
                   </div>
-                  <div 
+                  <div
                     className={`team-column ${dragOverTeam === 'team2' ? 'drag-over' : ''} ${teams.team2.length >= teamSize ? 'team-complete' : 'team-incomplete'}`}
                     onDragOver={(e) => handleDragOver(e, 'team2')}
                     onDragLeave={handleDragLeave}
@@ -627,9 +646,9 @@ Miércoles 18:00
                     </div>
                     <ul className="player-list">
                       {teams.team2.map((p, i) => (
-                        <li 
-                          key={`team2-${i}-${p.name}`} 
-                          className="player-item" 
+                        <li
+                          key={`team2-${i}-${p.name}`}
+                          className="player-item"
                           style={{ animationDelay: `${(i + teams.team1.length) * 0.05}s` }}
                           draggable="true"
                           onDragStart={(e) => handleDragStart(e, 'team2', i)}
@@ -638,8 +657,8 @@ Miércoles 18:00
                           <div className="player-toggles">
                             <div className="toggle-group">
                               {['DEF', 'MED', 'ATQ'].map(pos => (
-                                <button 
-                                  key={pos} 
+                                <button
+                                  key={pos}
                                   className={`pos-badge ${p.position === pos ? 'active' : ''}`}
                                   onClick={() => handleUpdatePlayer('team2', i, 'position', pos)}
                                 >{pos}</button>
@@ -647,14 +666,14 @@ Miércoles 18:00
                             </div>
                             <div className="toggle-group">
                               {['IZD', 'DCHA'].map(side => (
-                                <button 
-                                  key={side} 
+                                <button
+                                  key={side}
                                   className={`side-badge ${p.side === side ? 'active' : ''}`}
                                   onClick={() => handleUpdatePlayer('team2', i, 'side', side)}
                                 >{side}</button>
                               ))}
                             </div>
-                            <button 
+                            <button
                               className={`save-badge ${savedFeedback[p.name] ? 'saved' : ''}`}
                               onClick={() => handleSavePlayer(p)}
                               title="Guardar preferencias"
@@ -669,8 +688,8 @@ Miércoles 18:00
                 </div>
 
                 {teams.reserves.length > 0 && (
-                  <div 
-                    className={`team-column ${dragOverTeam === 'reserves' ? 'drag-over' : ''}`} 
+                  <div
+                    className={`team-column ${dragOverTeam === 'reserves' ? 'drag-over' : ''}`}
                     style={{ marginTop: '1rem' }}
                     onDragOver={(e) => handleDragOver(e, 'reserves')}
                     onDragLeave={handleDragLeave}
@@ -679,8 +698,8 @@ Miércoles 18:00
                     <h3 className="team-title" style={{ fontSize: '1rem', color: 'var(--text-secondary)' }}>⏳ Reservas</h3>
                     <ul className="player-list" style={{ flexDirection: 'row', flexWrap: 'wrap', gap: '8px' }}>
                       {teams.reserves.map((p, i) => (
-                        <li 
-                          key={`reserves-${i}-${p.name}`} 
+                        <li
+                          key={`reserves-${i}-${p.name}`}
                           className="player-badge"
                           draggable="true"
                           onDragStart={(e) => handleDragStart(e, 'reserves', i)}
@@ -718,7 +737,7 @@ Miércoles 18:00
               </select>
             </div>
           </div>
-          <div 
+          <div
             className="pitch-container"
             onDragOver={handlePitchDragOver}
             onDrop={handlePitchDrop}
@@ -732,7 +751,7 @@ Miércoles 18:00
 
             {/* Slots for Team 1 */}
             {PITCH_FORMATIONS[team1Formation].map(slot => (
-              <div 
+              <div
                 key={`slot-t1-${slot.id}`}
                 className="pitch-slot"
                 style={{ left: `${slot.x}%`, top: `${slot.y}%` }}
@@ -740,10 +759,10 @@ Miércoles 18:00
                 onDrop={(e) => handleSlotDrop(e, 'team1', slot)}
               />
             ))}
-            
+
             {/* Slots for Team 2 */}
             {PITCH_FORMATIONS[team2Formation].map(slot => (
-              <div 
+              <div
                 key={`slot-t2-${slot.id}`}
                 className="pitch-slot"
                 style={{ left: `${100 - slot.x}%`, top: `${slot.y}%` }}
@@ -751,13 +770,13 @@ Miércoles 18:00
                 onDrop={(e) => handleSlotDrop(e, 'team2', slot)}
               />
             ))}
-            
+
             {teams.team1.map((p, i) => {
               const style = getPlayerStyle(1, p, team1Formation, teams.team1);
               return (
-                <div 
-                  key={`pitch-t1-${p.name}`} 
-                  className="pitch-player team-red-player" 
+                <div
+                  key={`pitch-t1-${p.name}`}
+                  className="pitch-player team-red-player"
                   style={style}
                   draggable="true"
                   onDragStart={(e) => handlePitchDragStart(e, 'team1', i)}
@@ -769,13 +788,13 @@ Miércoles 18:00
                 </div>
               );
             })}
-            
+
             {teams.team2.map((p, i) => {
               const style = getPlayerStyle(2, p, team2Formation, teams.team2);
               return (
-                <div 
-                  key={`pitch-t2-${p.name}`} 
-                  className="pitch-player team-white-player" 
+                <div
+                  key={`pitch-t2-${p.name}`}
+                  className="pitch-player team-white-player"
                   style={style}
                   draggable="true"
                   onDragStart={(e) => handlePitchDragStart(e, 'team2', i)}
