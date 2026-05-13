@@ -160,10 +160,36 @@ export default function Home() {
     setTeams(prev => {
       const newTeams = { ...prev };
       const { team, index } = pitchDraggedItem;
+
+      let newPosition = null;
+      let newSide = null;
+
+      if (team === 'team1') {
+        if (x < 15) newPosition = 'POR';
+        else if (x < 30) newPosition = 'DEF';
+        else if (x < 44) newPosition = 'MED';
+        else newPosition = 'ATQ';
+      } else {
+        if (x > 85) newPosition = 'POR';
+        else if (x > 70) newPosition = 'DEF';
+        else if (x > 56) newPosition = 'MED';
+        else newPosition = 'ATQ';
+      }
+
+      if (y < 35) newSide = 'IZD';
+      else if (y > 65) newSide = 'DCHA';
+
+      if (y > 90) {
+        newPosition = null;
+        newSide = null;
+      }
+
       newTeams[team][index] = {
         ...newTeams[team][index],
         customX: x,
-        customY: y
+        customY: y,
+        position: newPosition,
+        side: newSide
       };
       return newTeams;
     });
