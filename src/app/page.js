@@ -43,6 +43,7 @@ export default function Home() {
   const [teamSize, setTeamSize] = useState(11);
   const [draggedItem, setDraggedItem] = useState(null);
   const [dragOverTeam, setDragOverTeam] = useState(null);
+  const [pitchDraggedItem, setPitchDraggedItem] = useState(null);
   const [savedFeedback, setSavedFeedback] = useState({});
 
   const loadPreferences = () => {
@@ -127,11 +128,46 @@ export default function Home() {
       };
       
       const [movedPlayer] = newTeams[sourceTeam].splice(sourceIndex, 1);
+      // Remove custom coordinates when moving between lists
+      movedPlayer.customX = undefined;
+      movedPlayer.customY = undefined;
+      
       newTeams[targetTeam].push(movedPlayer);
       
       return newTeams;
     });
     setDraggedItem(null);
+  };
+
+  const handlePitchDragStart = (e, team, index) => {
+    setPitchDraggedItem({ team, index });
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handlePitchDragOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handlePitchDrop = (e) => {
+    e.preventDefault();
+    if (!pitchDraggedItem) return;
+    
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
+    const y = Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100));
+    
+    setTeams(prev => {
+      const newTeams = { ...prev };
+      const { team, index } = pitchDraggedItem;
+      newTeams[team][index] = {
+        ...newTeams[team][index],
+        customX: x,
+        customY: y
+      };
+      return newTeams;
+    });
+    setPitchDraggedItem(null);
   };
 
   const handleGenerate = () => {
@@ -167,7 +203,9 @@ export default function Home() {
       const currentValue = newTeams[teamName][index][field];
       newTeams[teamName][index] = { 
         ...newTeams[teamName][index], 
-        [field]: currentValue === value ? null : value 
+        [field]: currentValue === value ? null : value,
+        customX: undefined,
+        customY: undefined
       };
       return newTeams;
     });
@@ -211,9 +249,9 @@ export default function Home() {
       
       return shuffled.map((p, i) => {
         if (i < formation.length) {
-          return { ...p, position: formation[i].position, side: formation[i].side };
+          return { ...p, position: formation[i].position, side: formation[i].side, customX: undefined, customY: undefined };
         }
-        return { ...p, position: null, side: null };
+        return { ...p, position: null, side: null, customX: undefined, customY: undefined };
       });
     };
 
@@ -547,7 +585,11 @@ Miércoles 18:00
       {teams && (
         <div className="pitch-section">
           <h2 className="team-title" style={{ justifyContent: 'center', marginBottom: '1.5rem', width: '100%' }}>Pizarra Táctica 📋</h2>
-          <div className="pitch-container">
+          <div 
+            className="pitch-container"
+            onDragOver={handlePitchDragOver}
+            onDrop={handlePitchDrop}
+          >
             <div className="pitch-lines">
               <div className="pitch-half-line"></div>
               <div className="pitch-center-circle"></div>
@@ -555,20 +597,36 @@ Miércoles 18:00
               <div className="pitch-penalty-right"></div>
             </div>
             
-            {teams.team1.map((p) => {
-              const style = getPlayerStyle(1, p, teams.team1);
+            {teams.team1.map((p, i) => {
+              const style = (p.customX !== undefined && p.customY !== undefined)
+                ? { left: `${p.customX}%`, top: `${p.customY}%` }
+                : getPlayerStyle(1, p, teams.team1);
               return (
-                <div key={`pitch-t1-${p.name}`} className="pitch-player team-red-player" style={style}>
+                <div 
+                  key={`pitch-t1-${p.name}`} 
+                  className="pitch-player team-red-player" 
+                  style={style}
+                  draggable="true"
+                  onDragStart={(e) => handlePitchDragStart(e, 'team1', i)}
+                >
                   <div className="player-dot"></div>
                   <span className="pitch-player-name">{p.name}</span>
                 </div>
               );
             })}
             
-            {teams.team2.map((p) => {
-              const style = getPlayerStyle(2, p, teams.team2);
+            {teams.team2.map((p, i) => {
+              const style = (p.customX !== undefined && p.customY !== undefined)
+                ? { left: `${p.customX}%`, top: `${p.customY}%` }
+                : getPlayerStyle(2, p, teams.team2);
               return (
-                <div key={`pitch-t2-${p.name}`} className="pitch-player team-white-player" style={style}>
+                <div 
+                  key={`pitch-t2-${p.name}`} 
+                  className="pitch-player team-white-player" 
+                  style={style}
+                  draggable="true"
+                  onDragStart={(e) => handlePitchDragStart(e, 'team2', i)}
+                >
                   <div className="player-dot"></div>
                   <span className="pitch-player-name">{p.name}</span>
                 </div>
