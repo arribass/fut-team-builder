@@ -50,7 +50,7 @@ const getPlayerStyle = (teamNum, p, formationName, allPlayersInTeam) => {
     const reserves = allPlayersInTeam.filter(op => !op.position);
     const index = reserves.findIndex(op => op.name === p.name);
     const x = teamNum === 1 ? (10 + index * 6) : (90 - index * 6);
-    return { left: `${x}%`, top: `94%`, zIndex: 10 + index };
+    return { '--x': `${x}%`, '--y': `94%`, left: `${x}%`, top: `94%`, zIndex: 10 + index };
   }
 
   const formation = PITCH_FORMATIONS[formationName] || PITCH_FORMATIONS['4-4-2'];
@@ -100,13 +100,15 @@ const getPlayerStyle = (teamNum, p, formationName, allPlayersInTeam) => {
 
   if (overlapLevel > 0) {
     return { 
+      '--x': `calc(${x}% + ${overlapLevel * 12}px)`, 
+      '--y': `calc(${y}% - ${overlapLevel * 12}px)`,
       left: `calc(${x}% + ${overlapLevel * 12}px)`, 
       top: `calc(${y}% - ${overlapLevel * 12}px)`,
       zIndex: 10 + overlapLevel 
     };
   }
 
-  return { left: `${x}%`, top: `${y}%`, zIndex: 10 };
+  return { '--x': `${x}%`, '--y': `${y}%`, left: `${x}%`, top: `${y}%`, zIndex: 10 };
 };
 
 export default function Home() {
@@ -299,9 +301,13 @@ export default function Home() {
     if (!pitchDraggedItem) return;
 
     const rect = e.currentTarget.getBoundingClientRect();
-    const y = Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100));
+    const isVertical = rect.height > rect.width;
+    const dropY = Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100));
+    const dropX = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
 
-    if (y > 90) { // Bench area
+    const isBench = isVertical ? (dropX > 85) : (dropY > 85);
+
+    if (isBench) { // Bench area
       setTeams(prev => {
         const newTeams = { team1: [...prev.team1], team2: [...prev.team2], reserves: [...prev.reserves] };
         const { team: sourceTeam, index: sourceIndex } = pitchDraggedItem;
@@ -754,7 +760,7 @@ Miércoles 18:00
               <div
                 key={`slot-t1-${slot.id}`}
                 className="pitch-slot"
-                style={{ left: `${slot.x}%`, top: `${slot.y}%` }}
+                style={{ '--x': `${slot.x}%`, '--y': `${slot.y}%`, left: `${slot.x}%`, top: `${slot.y}%` }}
                 onDragOver={handlePitchDragOver}
                 onDrop={(e) => handleSlotDrop(e, 'team1', slot)}
               />
@@ -765,7 +771,7 @@ Miércoles 18:00
               <div
                 key={`slot-t2-${slot.id}`}
                 className="pitch-slot"
-                style={{ left: `${100 - slot.x}%`, top: `${slot.y}%` }}
+                style={{ '--x': `${100 - slot.x}%`, '--y': `${slot.y}%`, left: `${100 - slot.x}%`, top: `${slot.y}%` }}
                 onDragOver={handlePitchDragOver}
                 onDrop={(e) => handleSlotDrop(e, 'team2', slot)}
               />

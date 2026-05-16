@@ -649,3 +649,70 @@ textarea::placeholder {
   transform: translate(-50%, -50%) scale(1.1);
 }
 
+@media (max-width: 768px) {
+  .main-header {
+    margin: -1rem -1rem 1.5rem -1rem;
+    padding: 1rem;
+  }
+
+  .header-content {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .header-actions {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .header-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+  }
+
+  main {
+    padding: 1rem;
+  }
+
+  .pitch-container {
+    aspect-ratio: 9 / 16;
+    max-height: none;
+  }
+
+  .pitch-player, .pitch-slot {
+    left: var(--y) !important;
+    top: var(--x) !important;
+  }
+
+  .pitch-half-line {
+    top: 50%;
+    bottom: auto;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    transform: translateY(-50%);
+  }
+
+  .pitch-penalty-left {
+    top: 0;
+    bottom: auto;
+    left: 25%;
+    width: 50%;
+    height: 16%;
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    border-top: none;
+  }
+
+  .pitch-penalty-right {
+    top: auto;
+    bottom: 0;
+    left: 25%;
+    width: 50%;
+    height: 16%;
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    border-bottom: none;
+  }
+}
+
