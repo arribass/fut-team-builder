@@ -126,13 +126,7 @@ export default function Home() {
 
   const [includePositions, setIncludePositions] = useState(true);
   const [includeReserves, setIncludeReserves] = useState(true);
-  const [boldNames, setBoldNames] = useState(false);
-  const [listType, setListType] = useState('bullet');
-  const [emojiTeam1, setEmojiTeam1] = useState('🔴');
-  const [emojiTeam2, setEmojiTeam2] = useState('⚪');
-  const [emojiReserves, setEmojiReserves] = useState('⏳');
   const [customFooter, setCustomFooter] = useState('');
-  const [customTitle, setCustomTitle] = useState('⚽ *Fut Team Balancer*');
   const [whatsappCopied, setWhatsappCopied] = useState(false);
 
   const loadPreferences = () => {
@@ -407,47 +401,41 @@ export default function Home() {
   const generateWhatsAppText = () => {
     if (!teams) return '';
 
-    let text = `${customTitle}\n`;
+    let text = `⚽ *FUT Team Balancer*\n`;
     if (matchHeader) {
       text += `📅 ${matchHeader}\n`;
     }
     text += `\n`;
 
     // Team 1
-    text += `${emojiTeam1} *EQUIPO ROJO*\n`;
-    teams.team1.forEach((p, idx) => {
+    text += `🔴 *EQUIPO ROJO*\n`;
+    teams.team1.forEach((p) => {
       let info = [];
       if (includePositions && p.position) info.push(p.position);
       if (includePositions && p.side) info.push(p.side);
       const suffix = info.length > 0 ? ` [${info.join(' ')}]` : '';
-      const prefix = listType === 'bullet' ? '• ' : `${idx + 1}. `;
-      const formattedName = boldNames ? `*${p.name}*` : p.name;
-      text += `${prefix}${formattedName}${suffix}\n`;
+      text += `• *${p.name}*${suffix}\n`;
     });
 
     // Team 2
-    text += `\n${emojiTeam2} *EQUIPO BLANCO*\n`;
-    teams.team2.forEach((p, idx) => {
+    text += `\n⚪ *EQUIPO BLANCO*\n`;
+    teams.team2.forEach((p) => {
       let info = [];
       if (includePositions && p.position) info.push(p.position);
       if (includePositions && p.side) info.push(p.side);
       const suffix = info.length > 0 ? ` [${info.join(' ')}]` : '';
-      const prefix = listType === 'bullet' ? '• ' : `${idx + 1}. `;
-      const formattedName = boldNames ? `*${p.name}*` : p.name;
-      text += `${prefix}${formattedName}${suffix}\n`;
+      text += `• *${p.name}*${suffix}\n`;
     });
 
     // Reserves
     if (includeReserves && teams.reserves.length > 0) {
-      text += `\n${emojiReserves} *RESERVAS*\n`;
-      teams.reserves.forEach((p, idx) => {
+      text += `\n⏳ *RESERVAS*\n`;
+      teams.reserves.forEach((p) => {
         let info = [];
         if (includePositions && p.position) info.push(p.position);
         if (includePositions && p.side) info.push(p.side);
         const suffix = info.length > 0 ? ` [${info.join(' ')}]` : '';
-        const prefix = listType === 'bullet' ? '• ' : `${idx + 1}. `;
-        const formattedName = boldNames ? `*${p.name}*` : p.name;
-        text += `${prefix}${formattedName}${suffix}\n`;
+        text += `• *${p.name}*${suffix}\n`;
       });
     }
 
@@ -771,59 +759,11 @@ Miércoles 18:00
                 <h2 className="team-title" style={{ margin: 0 }}>Generador de Mensaje de WhatsApp</h2>
               </div>
               <p className="card-subtitle" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>
-                Personaliza el formato y comparte la lista de los equipos fácilmente.
+                Comparte la lista de los equipos de forma rápida y sencilla.
               </p>
 
-              <div className="whatsapp-config-grid" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <div className="config-item" style={{ display: 'flex', flexDirection: 'column' }}>
-                  <label htmlFor="customTitle" className="config-label" style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-secondary)' }}>Título / Encabezado:</label>
-                  <input
-                    type="text"
-                    id="customTitle"
-                    value={customTitle}
-                    onChange={(e) => setCustomTitle(e.target.value)}
-                    className="team-size-input text-left"
-                    style={{ width: '100%', textAlign: 'left', marginTop: '0.25rem' }}
-                  />
-                </div>
-
-                <div className="config-item-row" style={{ display: 'flex', gap: '0.75rem' }}>
-                  <div className="config-item" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                    <label className="config-label" style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-secondary)' }}>Emoji Rojo:</label>
-                    <input
-                      type="text"
-                      value={emojiTeam1}
-                      onChange={(e) => setEmojiTeam1(e.target.value)}
-                      className="team-size-input emoji-input"
-                      style={{ width: '100%', marginTop: '0.25rem' }}
-                      maxLength="4"
-                    />
-                  </div>
-                  <div className="config-item" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                    <label className="config-label" style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-secondary)' }}>Emoji Blanco:</label>
-                    <input
-                      type="text"
-                      value={emojiTeam2}
-                      onChange={(e) => setEmojiTeam2(e.target.value)}
-                      className="team-size-input emoji-input"
-                      style={{ width: '100%', marginTop: '0.25rem' }}
-                      maxLength="4"
-                    />
-                  </div>
-                  <div className="config-item" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                    <label className="config-label" style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-secondary)' }}>Emoji Reservas:</label>
-                    <input
-                      type="text"
-                      value={emojiReserves}
-                      onChange={(e) => setEmojiReserves(e.target.value)}
-                      className="team-size-input emoji-input"
-                      style={{ width: '100%', marginTop: '0.25rem' }}
-                      maxLength="4"
-                    />
-                  </div>
-                </div>
-
-                <div className="config-toggles" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <div className="whatsapp-config-grid" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <div className="config-toggles" style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
                   <label className="toggle-container" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
                     <input
                       type="checkbox"
@@ -831,7 +771,7 @@ Miércoles 18:00
                       onChange={(e) => setIncludePositions(e.target.checked)}
                       style={{ cursor: 'pointer' }}
                     />
-                    <span className="toggle-label" style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Incluir posiciones y lados</span>
+                    <span className="toggle-label" style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Incluir posiciones</span>
                   </label>
 
                   <label className="toggle-container" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
@@ -841,54 +781,18 @@ Miércoles 18:00
                       onChange={(e) => setIncludeReserves(e.target.checked)}
                       style={{ cursor: 'pointer' }}
                     />
-                    <span className="toggle-label" style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Incluir lista de reservas</span>
+                    <span className="toggle-label" style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Incluir reservas</span>
                   </label>
-
-                  <label className="toggle-container" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-                    <input
-                      type="checkbox"
-                      checked={boldNames}
-                      onChange={(e) => setBoldNames(e.target.checked)}
-                      style={{ cursor: 'pointer' }}
-                    />
-                    <span className="toggle-label" style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Nombres en negrita (*Nombre*)</span>
-                  </label>
-
-                  <div className="toggle-container radio-group" style={{ display: 'flex', alignItems: 'center', marginTop: '0.25rem' }}>
-                    <span className="toggle-label" style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginRight: '1rem' }}>Lista:</span>
-                    <label className="radio-label" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', cursor: 'pointer' }}>
-                      <input
-                        type="radio"
-                        name="listType"
-                        value="bullet"
-                        checked={listType === 'bullet'}
-                        onChange={() => setListType('bullet')}
-                        style={{ cursor: 'pointer' }}
-                      />
-                      <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Puntos (•)</span>
-                    </label>
-                    <label className="radio-label" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', cursor: 'pointer', marginLeft: '1rem' }}>
-                      <input
-                        type="radio"
-                        name="listType"
-                        value="number"
-                        checked={listType === 'number'}
-                        onChange={() => setListType('number')}
-                        style={{ cursor: 'pointer' }}
-                      />
-                      <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Números (1.)</span>
-                    </label>
-                  </div>
                 </div>
 
                 <div className="config-item" style={{ display: 'flex', flexDirection: 'column' }}>
-                  <label htmlFor="customFooter" className="config-label" style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-secondary)' }}>Nota / Pie de mensaje:</label>
+                  <label htmlFor="customFooter" className="config-label" style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-secondary)' }}>Nota adicional (pie de mensaje):</label>
                   <textarea
                     id="customFooter"
-                    placeholder="Ej: Llevar camiseta de vuestro color. ¡A jugar! ⚽"
+                    placeholder="Ej: Llevar camiseta roja/blanca..."
                     value={customFooter}
                     onChange={(e) => setCustomFooter(e.target.value)}
-                    style={{ height: '70px', padding: '0.5rem', fontSize: '0.9rem', border: '1px solid var(--card-border)', background: 'rgba(255,255,255,0.03)', marginTop: '0.25rem', width: '100%', borderRadius: '0.5rem', resize: 'none', color: 'var(--text-primary)', outline: 'none' }}
+                    style={{ height: '55px', padding: '0.5rem', fontSize: '0.9rem', border: '1px solid var(--card-border)', background: 'rgba(255,255,255,0.03)', marginTop: '0.25rem', width: '100%', borderRadius: '0.5rem', resize: 'none', color: 'var(--text-primary)', outline: 'none' }}
                   />
                 </div>
               </div>
