@@ -124,6 +124,17 @@ export default function Home() {
   const [team1Formation, setTeam1Formation] = useState('4-4-2');
   const [team2Formation, setTeam2Formation] = useState('4-4-2');
 
+  const [includePositions, setIncludePositions] = useState(true);
+  const [includeReserves, setIncludeReserves] = useState(true);
+  const [boldNames, setBoldNames] = useState(false);
+  const [listType, setListType] = useState('bullet');
+  const [emojiTeam1, setEmojiTeam1] = useState('🔴');
+  const [emojiTeam2, setEmojiTeam2] = useState('⚪');
+  const [emojiReserves, setEmojiReserves] = useState('⏳');
+  const [customFooter, setCustomFooter] = useState('');
+  const [customTitle, setCustomTitle] = useState('⚽ *Fut Team Balancer*');
+  const [whatsappCopied, setWhatsappCopied] = useState(false);
+
   const loadPreferences = () => {
     try {
       const data = localStorage.getItem(`fut-builder-players-${orgId || 'default'}`);
@@ -393,42 +404,70 @@ export default function Home() {
     }));
   };
 
-  const copyToClipboard = () => {
-    if (!teams) return;
+  const generateWhatsAppText = () => {
+    if (!teams) return '';
 
-    let text = `⚽ *Fut Team Balancer*\n`;
-    if (matchHeader) text += `📅 ${matchHeader}\n`;
+    let text = `${customTitle}\n`;
+    if (matchHeader) {
+      text += `📅 ${matchHeader}\n`;
+    }
     text += `\n`;
 
-    text += `🔴 *EQUIPO ROJO*\n`;
-    teams.team1.forEach(p => {
+    // Team 1
+    text += `${emojiTeam1} *EQUIPO ROJO*\n`;
+    teams.team1.forEach((p, idx) => {
       let info = [];
-      if (p.position) info.push(p.position);
-      if (p.side) info.push(p.side);
+      if (includePositions && p.position) info.push(p.position);
+      if (includePositions && p.side) info.push(p.side);
       const suffix = info.length > 0 ? ` [${info.join(' ')}]` : '';
-      text += `• ${p.name}${suffix}\n`;
+      const prefix = listType === 'bullet' ? '• ' : `${idx + 1}. `;
+      const formattedName = boldNames ? `*${p.name}*` : p.name;
+      text += `${prefix}${formattedName}${suffix}\n`;
     });
 
-    text += `\n⚪ *EQUIPO BLANCO*\n`;
-    teams.team2.forEach(p => {
+    // Team 2
+    text += `\n${emojiTeam2} *EQUIPO BLANCO*\n`;
+    teams.team2.forEach((p, idx) => {
       let info = [];
-      if (p.position) info.push(p.position);
-      if (p.side) info.push(p.side);
+      if (includePositions && p.position) info.push(p.position);
+      if (includePositions && p.side) info.push(p.side);
       const suffix = info.length > 0 ? ` [${info.join(' ')}]` : '';
-      text += `• ${p.name}${suffix}\n`;
+      const prefix = listType === 'bullet' ? '• ' : `${idx + 1}. `;
+      const formattedName = boldNames ? `*${p.name}*` : p.name;
+      text += `${prefix}${formattedName}${suffix}\n`;
     });
 
-    if (teams.reserves.length > 0) {
-      text += `\n⏳ *RESERVAS*\n`;
-      teams.reserves.forEach(p => {
+    // Reserves
+    if (includeReserves && teams.reserves.length > 0) {
+      text += `\n${emojiReserves} *RESERVAS*\n`;
+      teams.reserves.forEach((p, idx) => {
         let info = [];
-        if (p.position) info.push(p.position);
-        if (p.side) info.push(p.side);
+        if (includePositions && p.position) info.push(p.position);
+        if (includePositions && p.side) info.push(p.side);
         const suffix = info.length > 0 ? ` [${info.join(' ')}]` : '';
-        text += `• ${p.name}${suffix}\n`;
+        const prefix = listType === 'bullet' ? '• ' : `${idx + 1}. `;
+        const formattedName = boldNames ? `*${p.name}*` : p.name;
+        text += `${prefix}${formattedName}${suffix}\n`;
       });
     }
 
+    if (customFooter.trim()) {
+      text += `\n${customFooter}\n`;
+    }
+
+    return text;
+  };
+
+  const sendWhatsAppMessage = () => {
+    if (!teams) return;
+    const text = generateWhatsAppText();
+    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+  };
+
+  const copyToClipboard = () => {
+    if (!teams) return;
+    const text = generateWhatsAppText();
     navigator.clipboard.writeText(text);
     alert('¡Copiado al portapapeles!');
   };
@@ -723,6 +762,172 @@ Miércoles 18:00
               </div>
             )}
           </div>
+
+          {/* WhatsApp Message Generator Card */}
+          {teams && (
+            <div className="card whatsapp-card" style={{ marginTop: '1.5rem' }}>
+              <div className="whatsapp-card-header" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                <span className="whatsapp-logo-icon" style={{ fontSize: '1.5rem' }}>💬</span>
+                <h2 className="team-title" style={{ margin: 0 }}>Generador de Mensaje de WhatsApp</h2>
+              </div>
+              <p className="card-subtitle" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>
+                Personaliza el formato y comparte la lista de los equipos fácilmente.
+              </p>
+
+              <div className="whatsapp-config-grid" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div className="config-item" style={{ display: 'flex', flexDirection: 'column' }}>
+                  <label htmlFor="customTitle" className="config-label" style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-secondary)' }}>Título / Encabezado:</label>
+                  <input
+                    type="text"
+                    id="customTitle"
+                    value={customTitle}
+                    onChange={(e) => setCustomTitle(e.target.value)}
+                    className="team-size-input text-left"
+                    style={{ width: '100%', textAlign: 'left', marginTop: '0.25rem' }}
+                  />
+                </div>
+
+                <div className="config-item-row" style={{ display: 'flex', gap: '0.75rem' }}>
+                  <div className="config-item" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                    <label className="config-label" style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-secondary)' }}>Emoji Rojo:</label>
+                    <input
+                      type="text"
+                      value={emojiTeam1}
+                      onChange={(e) => setEmojiTeam1(e.target.value)}
+                      className="team-size-input emoji-input"
+                      style={{ width: '100%', marginTop: '0.25rem' }}
+                      maxLength="4"
+                    />
+                  </div>
+                  <div className="config-item" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                    <label className="config-label" style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-secondary)' }}>Emoji Blanco:</label>
+                    <input
+                      type="text"
+                      value={emojiTeam2}
+                      onChange={(e) => setEmojiTeam2(e.target.value)}
+                      className="team-size-input emoji-input"
+                      style={{ width: '100%', marginTop: '0.25rem' }}
+                      maxLength="4"
+                    />
+                  </div>
+                  <div className="config-item" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                    <label className="config-label" style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-secondary)' }}>Emoji Reservas:</label>
+                    <input
+                      type="text"
+                      value={emojiReserves}
+                      onChange={(e) => setEmojiReserves(e.target.value)}
+                      className="team-size-input emoji-input"
+                      style={{ width: '100%', marginTop: '0.25rem' }}
+                      maxLength="4"
+                    />
+                  </div>
+                </div>
+
+                <div className="config-toggles" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <label className="toggle-container" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={includePositions}
+                      onChange={(e) => setIncludePositions(e.target.checked)}
+                      style={{ cursor: 'pointer' }}
+                    />
+                    <span className="toggle-label" style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Incluir posiciones y lados</span>
+                  </label>
+
+                  <label className="toggle-container" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={includeReserves}
+                      onChange={(e) => setIncludeReserves(e.target.checked)}
+                      style={{ cursor: 'pointer' }}
+                    />
+                    <span className="toggle-label" style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Incluir lista de reservas</span>
+                  </label>
+
+                  <label className="toggle-container" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={boldNames}
+                      onChange={(e) => setBoldNames(e.target.checked)}
+                      style={{ cursor: 'pointer' }}
+                    />
+                    <span className="toggle-label" style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Nombres en negrita (*Nombre*)</span>
+                  </label>
+
+                  <div className="toggle-container radio-group" style={{ display: 'flex', alignItems: 'center', marginTop: '0.25rem' }}>
+                    <span className="toggle-label" style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginRight: '1rem' }}>Lista:</span>
+                    <label className="radio-label" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', cursor: 'pointer' }}>
+                      <input
+                        type="radio"
+                        name="listType"
+                        value="bullet"
+                        checked={listType === 'bullet'}
+                        onChange={() => setListType('bullet')}
+                        style={{ cursor: 'pointer' }}
+                      />
+                      <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Puntos (•)</span>
+                    </label>
+                    <label className="radio-label" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', cursor: 'pointer', marginLeft: '1rem' }}>
+                      <input
+                        type="radio"
+                        name="listType"
+                        value="number"
+                        checked={listType === 'number'}
+                        onChange={() => setListType('number')}
+                        style={{ cursor: 'pointer' }}
+                      />
+                      <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Números (1.)</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="config-item" style={{ display: 'flex', flexDirection: 'column' }}>
+                  <label htmlFor="customFooter" className="config-label" style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-secondary)' }}>Nota / Pie de mensaje:</label>
+                  <textarea
+                    id="customFooter"
+                    placeholder="Ej: Llevar camiseta de vuestro color. ¡A jugar! ⚽"
+                    value={customFooter}
+                    onChange={(e) => setCustomFooter(e.target.value)}
+                    style={{ height: '70px', padding: '0.5rem', fontSize: '0.9rem', border: '1px solid var(--card-border)', background: 'rgba(255,255,255,0.03)', marginTop: '0.25rem', width: '100%', borderRadius: '0.5rem', resize: 'none', color: 'var(--text-primary)', outline: 'none' }}
+                  />
+                </div>
+              </div>
+
+              {/* Visual Live Preview */}
+              <div className="whatsapp-preview-container" style={{ marginTop: '1.25rem' }}>
+                <div className="whatsapp-preview-header">
+                  <div className="whatsapp-avatar">⚽</div>
+                  <div className="whatsapp-chat-info">
+                    <div className="whatsapp-chat-name">Fútbol Balancer Bot</div>
+                    <div className="whatsapp-chat-status">en línea</div>
+                  </div>
+                </div>
+                <div className="whatsapp-preview-body">
+                  <div className="whatsapp-bubble">
+                    <pre style={{ margin: 0, fontFamily: 'monospace', whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: '0.85rem' }}>{generateWhatsAppText()}</pre>
+                    <span className="whatsapp-time">
+                      {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      <span className="whatsapp-ticks"> ✓✓</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="whatsapp-actions" style={{ marginTop: '1.25rem', display: 'flex', gap: '1rem' }}>
+                <button className="btn btn-outline whatsapp-copy-btn" onClick={() => {
+                  const text = generateWhatsAppText();
+                  navigator.clipboard.writeText(text);
+                  setWhatsappCopied(true);
+                  setTimeout(() => setWhatsappCopied(false), 2000);
+                }} style={{ flex: 1, padding: '0.75rem 1rem', fontSize: '0.95rem' }}>
+                  {whatsappCopied ? '✓ ¡Copiado!' : '📋 Copiar Mensaje'}
+                </button>
+                <button className="btn whatsapp-send-btn" onClick={sendWhatsAppMessage} style={{ flex: 1, padding: '0.75rem 1rem', fontSize: '0.95rem', background: 'linear-gradient(135deg, #25D366, #128C7E)', boxShadow: '0 4px 15px -5px #25D366' }}>
+                  💬 Enviar WhatsApp
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
