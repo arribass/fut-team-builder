@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FUT Team Balancer
 
-## Getting Started
+Un balanceador y gestor de equipos de fútbol premium diseñado para organizar partidos de forma inteligente. El proyecto está construido con Next.js y ofrece una pizarra táctica interactiva, un generador simplificado de listas de equipos formateadas para WhatsApp y un sistema de almacenamiento de preferencias de jugadores basado en grupos.
 
-First, run the development server:
+## 🚀 Objetivo del Proyecto
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+El objetivo principal es convertir esta aplicación en un **Bot de WhatsApp** automatizado. Esto permitirá a los usuarios comunicarse y gestionar sus partidos directamente desde un chat de WhatsApp sin necesidad de entrar a la web.
+
+### 🤖 Comandos del Bot
+
+El primer comando implementado para iniciar la comunicación con el bot de WhatsApp será:
+
+```text
+dime tu id de organizacion
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Este comando servirá para vincular el chat o grupo de WhatsApp con el identificador de la organización/grupo de juego registrado en la plataforma (por ejemplo, el ID de grupo configurado en el panel lateral de la aplicación).
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🛠️ Tecnologías
 
-## Learn More
+- **Framework**: Next.js (App Router)
+- **Componentes**: React (Hooks, Estado local, Efectos dinámicos)
+- **Estilos**: Vanilla CSS con variables CSS personalizadas
+- **Almacenamiento**: Persistencia local (localStorage) por ID de grupo para guardar posiciones preferidas de jugadores
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 💻 Desarrollo Local
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Para poner en marcha el proyecto en tu máquina local, sigue estos pasos:
 
-## Deploy on Vercel
+1. **Instalar dependencias**:
+   ```bash
+   npm install
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+2. **Iniciar servidor de desarrollo**:
+   ```bash
+   npm run dev
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+3. **Ver en el navegador**:
+   Abre [http://localhost:3000](http://localhost:3000) en tu navegador para ver la aplicación web interactiva.
+
+4. **Compilación de producción**:
+   ```bash
+   npm run build
+   ```
+
+---
+
+## ⚽ Características
+
+- **Pizarra Táctica interactiva**: Arrastra y suelta jugadores en el campo de fútbol según la formación táctica elegida.
+- **Formaciones Dinámicas**: Soporta formaciones clásicas de 11 jugadores (`4-4-2`, `4-3-3`, `3-5-2`) y formaciones de 12 jugadores (`4-4-3`, `4-5-2`) habilitadas automáticamente cuando la plantilla es de 12.
+- **Generador de Mensajes de WhatsApp**: Un botón para copiar la lista formateada y compartir directamente a WhatsApp con opciones de personalización simplificadas (incluir posiciones, incluir reservas, añadir notas de pie de mensaje).

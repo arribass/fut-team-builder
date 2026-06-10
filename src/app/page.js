@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { parsePlayers, balanceTeams, parseHeader } from '@/lib/balancer';
 
 const PITCH_FORMATIONS = {
@@ -42,6 +42,34 @@ const PITCH_FORMATIONS = {
     { id: 'med-dcha', position: 'MED', side: 'DCHA', x: 35, y: 85 },
     { id: 'atq-1', position: 'ATQ', side: null, x: 46, y: 40 },
     { id: 'atq-2', position: 'ATQ', side: null, x: 46, y: 60 },
+  ],
+  '4-4-3': [
+    { id: 'por', position: 'POR', side: null, x: 5, y: 50 },
+    { id: 'def-izd', position: 'DEF', side: 'IZD', x: 20, y: 15 },
+    { id: 'def-c1', position: 'DEF', side: null, x: 18, y: 38 },
+    { id: 'def-c2', position: 'DEF', side: null, x: 18, y: 62 },
+    { id: 'def-dcha', position: 'DEF', side: 'DCHA', x: 20, y: 85 },
+    { id: 'med-izd', position: 'MED', side: 'IZD', x: 35, y: 15 },
+    { id: 'med-c1', position: 'MED', side: null, x: 33, y: 38 },
+    { id: 'med-c2', position: 'MED', side: null, x: 33, y: 62 },
+    { id: 'med-dcha', position: 'MED', side: 'DCHA', x: 35, y: 85 },
+    { id: 'atq-izd', position: 'ATQ', side: 'IZD', x: 48, y: 25 },
+    { id: 'atq-c', position: 'ATQ', side: null, x: 46, y: 50 },
+    { id: 'atq-dcha', position: 'ATQ', side: 'DCHA', x: 48, y: 75 },
+  ],
+  '4-5-2': [
+    { id: 'por', position: 'POR', side: null, x: 5, y: 50 },
+    { id: 'def-izd', position: 'DEF', side: 'IZD', x: 18, y: 15 },
+    { id: 'def-c1', position: 'DEF', side: null, x: 16, y: 38 },
+    { id: 'def-c2', position: 'DEF', side: null, x: 16, y: 62 },
+    { id: 'def-dcha', position: 'DEF', side: 'DCHA', x: 18, y: 85 },
+    { id: 'med-izd', position: 'MED', side: 'IZD', x: 35, y: 15 },
+    { id: 'med-ci', position: 'MED', side: null, x: 32, y: 32 },
+    { id: 'med-c', position: 'MED', side: null, x: 30, y: 50 },
+    { id: 'med-cd', position: 'MED', side: null, x: 32, y: 68 },
+    { id: 'med-dcha', position: 'MED', side: 'DCHA', x: 35, y: 85 },
+    { id: 'atq-1', position: 'ATQ', side: null, x: 46, y: 38 },
+    { id: 'atq-2', position: 'ATQ', side: null, x: 46, y: 62 },
   ],
 };
 
@@ -128,6 +156,25 @@ export default function Home() {
   const [includeReserves, setIncludeReserves] = useState(true);
   const [customFooter, setCustomFooter] = useState('');
   const [whatsappCopied, setWhatsappCopied] = useState(false);
+
+  const getAvailableFormations = () => {
+    const allFormations = Object.keys(PITCH_FORMATIONS);
+    if (teamSize === 12) {
+      return allFormations;
+    } else {
+      return allFormations.filter(f => f !== '4-4-3' && f !== '4-5-2');
+    }
+  };
+
+  useEffect(() => {
+    const available = getAvailableFormations();
+    if (!available.includes(team1Formation)) {
+      setTeam1Formation('4-4-2');
+    }
+    if (!available.includes(team2Formation)) {
+      setTeam2Formation('4-4-2');
+    }
+  }, [teamSize]);
 
   const loadPreferences = () => {
     try {
@@ -372,7 +419,7 @@ export default function Home() {
   const handleRandomFormation = () => {
     if (!teams) return;
 
-    const available = Object.keys(PITCH_FORMATIONS);
+    const available = getAvailableFormations();
 
     const applyFormation = (teamArray, formName) => {
       const formation = PITCH_FORMATIONS[formName];
@@ -841,14 +888,14 @@ Miércoles 18:00
             <div className="formation-selector" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <label style={{ fontWeight: 600, color: '#ef4444' }}>Formación Rojo: </label>
               <select value={team1Formation} onChange={e => setTeam1Formation(e.target.value)} className="team-size-input" style={{ width: 'auto' }}>
-                {Object.keys(PITCH_FORMATIONS).map(f => <option key={f} value={f}>{f}</option>)}
+                {getAvailableFormations().map(f => <option key={f} value={f}>{f}</option>)}
               </select>
             </div>
             <h2 className="team-title" style={{ margin: 0 }}>Pizarra Táctica 📋</h2>
             <div className="formation-selector" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <label style={{ fontWeight: 600, color: '#f3f4f6' }}>Formación Blanco: </label>
               <select value={team2Formation} onChange={e => setTeam2Formation(e.target.value)} className="team-size-input" style={{ width: 'auto' }}>
-                {Object.keys(PITCH_FORMATIONS).map(f => <option key={f} value={f}>{f}</option>)}
+                {getAvailableFormations().map(f => <option key={f} value={f}>{f}</option>)}
               </select>
             </div>
           </div>
