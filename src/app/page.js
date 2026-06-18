@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { parsePlayers, balanceTeams, parseHeader } from '@/lib/balancer';
+import TournamentGenerator from '@/components/TournamentGenerator';
 
 const PITCH_FORMATIONS = {
   '4-4-2': [
@@ -140,6 +141,7 @@ const getPlayerStyle = (teamNum, p, formationName, allPlayersInTeam) => {
 };
 
 export default function Home() {
+  const [activeTab, setActiveTab] = useState('balancer'); // 'balancer' | 'tournament'
   const [inputText, setInputText] = useState('');
   const [teams, setTeams] = useState(null);
   const [matchHeader, setMatchHeader] = useState('');
@@ -551,12 +553,29 @@ R2. Pierre`;
     <main>
       <header className="main-header">
         <div className="header-content">
-          <div className="logo">
-            <span className="logo-emoji">⚽</span>
-            <span className="logo-text">FUT<span className="logo-highlight">BUILDER</span></span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
+            <div className="logo">
+              <span className="logo-emoji">⚽</span>
+              <span className="logo-text">FUT<span className="logo-highlight">BUILDER</span></span>
+            </div>
+
+            <div className="app-tabs">
+              <button 
+                className={`tab-btn ${activeTab === 'balancer' ? 'active' : ''}`}
+                onClick={() => setActiveTab('balancer')}
+              >
+                ⚖️ Equilibrador
+              </button>
+              <button 
+                className={`tab-btn ${activeTab === 'tournament' ? 'active' : ''}`}
+                onClick={() => setActiveTab('tournament')}
+              >
+                🏆 Torneo <span className="beta-badge">BETA</span>
+              </button>
+            </div>
           </div>
 
-          {teams && (
+          {activeTab === 'balancer' && teams && (
             <div className="header-center-info">
               {matchHeader && <div className="header-match-date">📅 {matchHeader}</div>}
               <div className="header-player-count">
@@ -565,33 +584,38 @@ R2. Pierre`;
             </div>
           )}
 
-          <nav className="header-actions">
-            {teams && (
-              <>
-                <button className="header-btn" onClick={handleRandomFormation}>
-                  🎲 Formación Aleatoria
-                </button>
-                <button className="header-btn" onClick={handleRebalance}>
-                  ⚖️ Re-equilibrar
-                </button>
-                <button
-                  className="header-btn"
-                  style={{ borderColor: savedFeedback.all ? 'var(--accent-green)' : '', color: savedFeedback.all ? 'var(--accent-green)' : '' }}
-                  onClick={handleSaveAllPlayers}
-                >
-                  {savedFeedback.all ? '✓' : '💾'} Guardar
-                </button>
-                <button className="header-btn" onClick={copyToClipboard}>
-                  📱 Copiar
-                </button>
-              </>
-            )}
-            <button className="header-btn" onClick={handleReset}>
-              <span className="btn-icon">🗑️</span> Limpiar
-            </button>
-          </nav>
+          {activeTab === 'balancer' && (
+            <nav className="header-actions">
+              {teams && (
+                <>
+                  <button className="header-btn" onClick={handleRandomFormation}>
+                    🎲 Formación Aleatoria
+                  </button>
+                  <button className="header-btn" onClick={handleRebalance}>
+                    ⚖️ Re-equilibrar
+                  </button>
+                  <button
+                    className="header-btn"
+                    style={{ borderColor: savedFeedback.all ? 'var(--accent-green)' : '', color: savedFeedback.all ? 'var(--accent-green)' : '' }}
+                    onClick={handleSaveAllPlayers}
+                  >
+                    {savedFeedback.all ? '✓' : '💾'} Guardar
+                  </button>
+                  <button className="header-btn" onClick={copyToClipboard}>
+                    📱 Copiar
+                  </button>
+                </>
+              )}
+              <button className="header-btn" onClick={handleReset}>
+                <span className="btn-icon">🗑️</span> Limpiar
+              </button>
+            </nav>
+          )}
         </div>
       </header>
+
+      {activeTab === 'balancer' ? (
+        <>
 
       <div className="container">
 
@@ -970,6 +994,10 @@ Miércoles 18:00
             })}
           </div>
         </div>
+      )}
+        </>
+      ) : (
+        <TournamentGenerator initialTeams={teams} />
       )}
     </main>
   );
