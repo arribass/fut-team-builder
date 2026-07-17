@@ -78,12 +78,13 @@ export function parsePlayers(text) {
  * Splits players into two balanced teams.
  * For MVP, it alternate between teams to ensure equal numbers.
  * @param {Array<{name: string, isReserve: boolean}>} players 
+ * @param {number} [teamSize=11]
  * @returns {{team1: string[], team2: string[], reserves: string[]}}
  */
-export function balanceTeams(players) {
+export function balanceTeams(players, teamSize = 11) {
   // Separate active players and reserves
   const activePlayers = players.filter(p => !p.isReserve);
-  const reserves = players.filter(p => p.isReserve);
+  const reserves = [...players.filter(p => p.isReserve)];
 
   // Shuffle active players to avoid order bias
   const shuffled = [...activePlayers].sort(() => Math.random() - 0.5);
@@ -96,8 +97,8 @@ export function balanceTeams(players) {
     groups[key].push(p);
   });
 
-  const team1 = [];
-  const team2 = [];
+  let team1 = [];
+  let team2 = [];
   let turn = 0; // 0 for team1, 1 for team2
 
   const sortedKeys = Object.keys(groups).sort();
@@ -113,6 +114,22 @@ export function balanceTeams(players) {
       }
     });
   });
+
+  // Cap the teams to teamSize and send excess to reserves
+  if (teamSize && teamSize > 0) {
+    const excessTeam1 = team1.slice(teamSize);
+    const excessTeam2 = team2.slice(teamSize);
+
+    team1 = team1.slice(0, teamSize);
+    team2 = team2.slice(0, teamSize);
+
+    excessTeam1.forEach(p => {
+      reserves.push({ ...p, isReserve: true, position: null, side: null, slotId: undefined });
+    });
+    excessTeam2.forEach(p => {
+      reserves.push({ ...p, isReserve: true, position: null, side: null, slotId: undefined });
+    });
+  }
 
   return { team1, team2, reserves };
 }
