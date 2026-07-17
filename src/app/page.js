@@ -140,8 +140,78 @@ const getPlayerStyle = (teamNum, p, formationName, allPlayersInTeam) => {
   return { '--x': `${x}%`, '--y': `${y}%`, left: `${x}%`, top: `${y}%`, zIndex: 10 };
 };
 
+const assignFormationSlots = (teamArray, formName) => {
+  const formation = PITCH_FORMATIONS[formName] || PITCH_FORMATIONS['4-4-2'];
+  const assignedPlayers = new Array(teamArray.length);
+  const occupiedSlots = new Set();
+
+  // 1. First pass: Assign players with saved preferences to matching slots
+  teamArray.forEach((p, index) => {
+    if (p.position) {
+      let slotIndex = formation.findIndex((s, i) => 
+        !occupiedSlots.has(i) && s.position === p.position && s.side === p.side
+      );
+      if (slotIndex === -1) {
+        slotIndex = formation.findIndex((s, i) => 
+          !occupiedSlots.has(i) && s.position === p.position
+        );
+      }
+
+      if (slotIndex !== -1) {
+        occupiedSlots.add(slotIndex);
+        assignedPlayers[index] = {
+          ...p,
+          position: formation[slotIndex].position,
+          side: formation[slotIndex].side,
+          slotId: formation[slotIndex].id
+        };
+      }
+    }
+  });
+
+  // 2. Second pass: Assign remaining players to remaining slots
+  const remainingPlayersIndices = [];
+  teamArray.forEach((p, index) => {
+    if (!assignedPlayers[index]) {
+      remainingPlayersIndices.push(index);
+    }
+  });
+
+  const shuffledRemainingIndices = [...remainingPlayersIndices].sort(() => Math.random() - 0.5);
+
+  const remainingSlotsIndices = [];
+  formation.forEach((s, i) => {
+    if (!occupiedSlots.has(i)) {
+      remainingSlotsIndices.push(i);
+    }
+  });
+
+  shuffledRemainingIndices.forEach((playerIdx, i) => {
+    const p = teamArray[playerIdx];
+    if (i < remainingSlotsIndices.length) {
+      const slotIdx = remainingSlotsIndices[i];
+      assignedPlayers[playerIdx] = {
+        ...p,
+        position: formation[slotIdx].position,
+        side: formation[slotIdx].side,
+        slotId: formation[slotIdx].id
+      };
+    } else {
+      assignedPlayers[playerIdx] = {
+        ...p,
+        position: null,
+        side: null,
+        slotId: undefined
+      };
+    }
+  });
+
+  return assignedPlayers;
+};
+
 export default function Home() {
   const [activeTab, setActiveTab] = useState('balancer'); // 'balancer' | 'tournament'
+  const [actionsOpen, setActionsOpen] = useState(false);
   const [inputText, setInputText] = useState('');
   const [teams, setTeams] = useState(null);
   const [matchHeader, setMatchHeader] = useState('');
@@ -177,6 +247,18 @@ export default function Home() {
       setTeam2Formation('4-4-2');
     }
   }, [teamSize]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (actionsOpen && !event.target.closest('.dropdown-container')) {
+        setActionsOpen(false);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [actionsOpen]);
 
   const loadPreferences = () => {
     try {
@@ -390,7 +472,15 @@ export default function Home() {
         return p;
       });
       const result = balanceTeams(playersWithPrefs);
-      setTeams(result);
+      
+      const team1WithPos = assignFormationSlots(result.team1, team1Formation);
+      const team2WithPos = assignFormationSlots(result.team2, team2Formation);
+
+      setTeams({
+        team1: team1WithPos,
+        team2: team2WithPos,
+        reserves: result.reserves
+      });
     }
   };
 
@@ -398,7 +488,15 @@ export default function Home() {
     if (!teams) return;
     const allPlayers = [...teams.team1, ...teams.team2, ...teams.reserves];
     const result = balanceTeams(allPlayers);
-    setTeams(result);
+    
+    const team1WithPos = assignFormationSlots(result.team1, team1Formation);
+    const team2WithPos = assignFormationSlots(result.team2, team2Formation);
+
+    setTeams({
+      team1: team1WithPos,
+      team2: team2WithPos,
+      reserves: result.reserves
+    });
   };
 
   const handleUpdatePlayer = (teamName, index, field, value) => {
@@ -550,9 +648,9 @@ R2. Pierre`;
   };
 
   return (
-    <main>
+    <>
       <header className="main-header">
-        <div className="header-content">
+        <div className="header-inner">
           <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
             <div className="logo">
               <span className="logo-emoji">⚽</span>
@@ -586,36 +684,52 @@ R2. Pierre`;
 
           {activeTab === 'balancer' && (
             <nav className="header-actions">
-              {teams && (
-                <>
-                  <button className="header-btn" onClick={handleRandomFormation}>
-                    🎲 Formación Aleatoria
-                  </button>
-                  <button className="header-btn" onClick={handleRebalance}>
-                    ⚖️ Re-equilibrar
-                  </button>
-                  <button
-                    className="header-btn"
-                    style={{ borderColor: savedFeedback.all ? 'var(--accent-green)' : '', color: savedFeedback.all ? 'var(--accent-green)' : '' }}
-                    onClick={handleSaveAllPlayers}
-                  >
-                    {savedFeedback.all ? '✓' : '💾'} Guardar
-                  </button>
-                  <button className="header-btn" onClick={copyToClipboard}>
-                    📱 Copiar
-                  </button>
-                </>
-              )}
-              <button className="header-btn" onClick={handleReset}>
-                <span className="btn-icon">🗑️</span> Limpiar
-              </button>
+              <div className="dropdown-container">
+                <button 
+                  className="header-btn dropdown-trigger" 
+                  onClick={() => setActionsOpen(!actionsOpen)}
+                  style={{ gap: '0.35rem' }}
+                >
+                  ⚙️ Acciones <span className={`dropdown-arrow ${actionsOpen ? 'open' : ''}`}>▾</span>
+                </button>
+                
+                {actionsOpen && (
+                  <div className="dropdown-menu">
+                    {teams && (
+                      <>
+                        <button className="dropdown-item" onClick={() => { handleRandomFormation(); setActionsOpen(false); }}>
+                          <span>🎲</span> Formación Aleatoria
+                        </button>
+                        <button className="dropdown-item" onClick={() => { handleRebalance(); setActionsOpen(false); }}>
+                          <span>⚖️</span> Re-equilibrar
+                        </button>
+                        <button 
+                          className="dropdown-item" 
+                          onClick={() => { handleSaveAllPlayers(); setActionsOpen(false); }}
+                          style={{ color: savedFeedback.all ? 'var(--accent-green)' : '' }}
+                        >
+                          <span>{savedFeedback.all ? '✓' : '💾'}</span> Guardar Preferencias
+                        </button>
+                        <button className="dropdown-item" onClick={() => { copyToClipboard(); setActionsOpen(false); }}>
+                          <span>📱</span> Copiar para WhatsApp
+                        </button>
+                        <div className="dropdown-divider"></div>
+                      </>
+                    )}
+                    <button className="dropdown-item text-danger" onClick={() => { handleReset(); setActionsOpen(false); }}>
+                      <span>🗑️</span> Limpiar Todo
+                    </button>
+                  </div>
+                )}
+              </div>
             </nav>
           )}
         </div>
       </header>
 
-      {activeTab === 'balancer' ? (
-        <>
+      <main>
+        {activeTab === 'balancer' ? (
+          <>
 
       <div className="container">
 
@@ -1000,6 +1114,7 @@ Miércoles 18:00
         <TournamentGenerator initialTeams={teams} />
       )}
     </main>
+    </>
   );
 }
 
