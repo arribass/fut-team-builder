@@ -153,9 +153,6 @@ export function generateSingleElimination(teams) {
     p *= 2;
   }
 
-  // Pad the team list with "BYE"
-  const paddedTeams = [...teams, ...Array(p - n).fill('BYE')];
-
   // Number of rounds is log2(p)
   const numRounds = Math.log2(p);
   const rounds = [];
@@ -192,20 +189,23 @@ export function generateSingleElimination(teams) {
     currentMatchesCount /= 2;
   }
 
-  // 3. Populate Round 0 matches
-  // We pair teams sequentially. To balance it: e.g. team 0 vs team 1, etc.
+  // 3. Populate Round 0 matches without BYE vs BYE matchups
+  // Since n >= p / 2, we have at most p / 2 BYEs.
+  // The number of matches with 2 real teams is: n - p/2
+  // The number of matches with 1 real team and 1 BYE is: p/2 - (n - p/2) = p - n
   const r0Matches = rounds[0].matches;
-  for (let m = 0; m < r0Matches.length; m++) {
-    r0Matches[m].home = paddedTeams[2 * m];
-    r0Matches[m].away = paddedTeams[2 * m + 1];
+  const numMatchesWithTwoTeams = n - p / 2;
+  let teamIndex = 0;
 
-    // If one of the slots is a "BYE", advance the other team automatically
-    if (r0Matches[m].home === 'BYE') {
-      r0Matches[m].played = true;
-      r0Matches[m].winner = r0Matches[m].away;
-      r0Matches[m].homeScore = '-';
-      r0Matches[m].awayScore = 'W';
-    } else if (r0Matches[m].away === 'BYE') {
+  for (let m = 0; m < r0Matches.length; m++) {
+    if (m < numMatchesWithTwoTeams) {
+      r0Matches[m].home = teams[teamIndex++];
+      r0Matches[m].away = teams[teamIndex++];
+    } else {
+      r0Matches[m].home = teams[teamIndex++];
+      r0Matches[m].away = 'BYE';
+
+      // Automatically advance the real team
       r0Matches[m].played = true;
       r0Matches[m].winner = r0Matches[m].home;
       r0Matches[m].homeScore = 'W';

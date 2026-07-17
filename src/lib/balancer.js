@@ -12,8 +12,8 @@ export function parseHeader(text) {
     const trimmed = line.trim();
     if (!trimmed) continue;
     
-    // If it starts with a number (like "1. ") or "R1", it's likely a player
-    if (trimmed.match(/^([0-9]|R[0-9])/i)) break;
+    // If it starts with a number (like "1. "), reserve marker, etc., it's likely a player
+    if (trimmed.match(/^([0-9]|R[0-9]|R[\.\s]|Reserva)/i)) break;
     
     // If it's a separator, skip it but it might be the end of the header
     if (trimmed.match(/^[—\-\._\*]+$/)) continue;
@@ -49,18 +49,18 @@ export function parsePlayers(text) {
     // Skip common date/time patterns if they don't look like players
     // e.g. "Miércoles 15 abril", "F11 a las 18.00"
     // Only skip if it doesn't start with a player prefix
-    if (!trimmed.match(/^([0-9]|R[0-9])/i)) {
+    if (!trimmed.match(/^([0-9]|R[0-9]|R[\.\s]|Reserva)/i)) {
       if (trimmed.match(/^(lunes|martes|miércoles|jueves|viernes|sábado|domingo)/i)) return;
       if (trimmed.match(/hora|hoy/i)) return;
     }
 
-    // Detect reserves
-    const isReserve = trimmed.match(/^(R[0-9]|Reserva)/i) !== null;
+    // Detect reserves (e.g. R. Patxi, R Alberto, R1. Pablo, Reserva Patxi)
+    const isReserve = trimmed.match(/^(R[0-9]+|R[\.\s]|Reserva)/i) !== null;
 
-    // Clean name: remove "1. ", "R1. ", etc. and content in parentheses
+    // Clean name: remove "1. ", reserve prefixes, etc. and content in parentheses
     let name = trimmed
       .replace(/^[0-9]+[\.\s-]+/, '') // remove leading counters like "1. "
-      .replace(/^(R[0-9]+|Reserva)[\.\s-]+/i, '') // remove reserve prefix
+      .replace(/^(R[0-9]+|R\.|R\s+|Reserva)[\.\s-]*/i, '') // remove reserve prefix safely without matching normal R names
       .replace(/\(.*?\)/g, '') // remove content in parentheses
       .replace(/[.,\s]+$/, '') // remove trailing punctuation and spaces
       .replace(/\s+/g, ' ') // collapse multiple spaces
