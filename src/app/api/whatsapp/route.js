@@ -66,19 +66,52 @@ export async function POST(request) {
     let replyText = '';
     let actionExecuted = 'balance';
 
-    if (trimmed === 'dime tu id de organizacion' || trimmed === 'id') {
+    const isInitCommand = (
+      trimmed === '/fut-team-balancer init' ||
+      trimmed === '/init' ||
+      trimmed === '/vincular' ||
+      trimmed === 'dime tu id de organizacion' ||
+      trimmed === 'id' ||
+      trimmed === '/id'
+    );
+
+    if (isInitCommand) {
       actionExecuted = 'get_org_id';
-      replyText = `🤖 *FUT Balancer Bot*\n\nTu ID de organización configurado es: *${orgId}*`;
-    } else if (trimmed === 'ayuda' || trimmed === 'help' || trimmed === '/help') {
+      replyText = `⚽ *FUT Team Balancer Bot Inicializado* ⚽\n\n🔑 *ID de Organización*: *${orgId}*\n\n✅ *Grupo vinculado.* Usa */equilibrar* o */make-team* para generar equipos.`;
+    } else if (trimmed === '/ayuda' || trimmed === '/help' || trimmed === '/start') {
       actionExecuted = 'help';
-      replyText = `⚽ *FUT Team Balancer Bot*\n\n*Comandos disponibles:*\n• Pega una lista de jugadores para equilibrar automáticamente dos equipos.\n• *dime tu id de organizacion*: Muestra el ID de tu grupo registrado.`;
-    } else {
-      const matchHeader = parseHeader(messageText);
-      const players = parsePlayers(messageText);
+      replyText = `⚽ *FUT Team Balancer Bot* ⚽\n\nComandos disponibles:\n\n1️⃣ *Equilibrar Equipos*:\nEscribe */equilibrar* o */make-team* junto con la lista de jugadores.\n\n2️⃣ *Ver ID de Grupo*:\nEscribe *dime tu id de organizacion* o */id*.\n\n3️⃣ *Ver un ejemplo*:\nEscribe */ejemplo* para ver una lista para probar.`;
+    } else if (trimmed.startsWith('/perra')) {
+      actionExecuted = 'perra';
+      const perraList = [
+        '¡Tú más! 🐶',
+        '¡Guau guau! 🐕',
+        '¡Eso lo serás tú! 😜',
+        '¡Perra tú, mi reina! 👑💅',
+        '¡Respeto con el Míster del equipo! ⚽',
+        '¡A ti te quería yo ver tirando un penalti! ⚽💨',
+        '¡Tú sí que eres perra vieja jugando al fútbol! ⚽🔥',
+      ];
+      replyText = perraList[Math.floor(Math.random() * perraList.length)];
+    } else if (trimmed.startsWith('/ejemplo')) {
+      actionExecuted = 'sample';
+      replyText = `/equilibrar\nMiércoles 18:30 - Campo F11\n\n1. Aranda\n2. Patxi\n3. Ramon\n4. Sergio I\n5. Nico\n6. Facu\n7. Kevin\n8. Jose Ángel\n9. David gut\n10. Julito\n11. Geisler\n12. Moncho\n13. Max\n14. Julián Lemar\n15. Andrés\n16. Iñaki DK\n17. Jon\n18. Rafa L\n19. Felipe\n20. Sebas\n———-\nR1. Pablo V\nR2. Pierre`;
+    } else if (
+      trimmed.startsWith('/equilibrar') ||
+      trimmed.startsWith('/make-team') ||
+      trimmed.startsWith('/maketeam') ||
+      trimmed.startsWith('/hacer-equipos') ||
+      trimmed.startsWith('/balance') ||
+      trimmed.startsWith('/generar') ||
+      trimmed.startsWith('/equipos')
+    ) {
+      const cleanText = messageText.replace(/^\/(equilibrar|make-team|maketeam|hacer-equipos|balance|generar|equipos)\b\s*/i, '').trim();
+      const matchHeader = parseHeader(cleanText);
+      const players = parsePlayers(cleanText);
 
       if (players.length < 2) {
         actionExecuted = 'invalid_input';
-        replyText = `⚽ *FUT Team Balancer Bot*\n\nNo he detectado suficientes jugadores en tu mensaje.\n\n*Ejemplo de lista:*\nMiércoles 18:00\n1. Aranda\n2. Patxi\n3. Ramon\n4. Sergio`;
+        replyText = `⚽ *FUT Team Balancer Bot*\n\nPor favor, añade la lista de jugadores debajo del comando \`/equilibrar\`.\nEscribe */ejemplo* para ver cómo formatearlo.`;
       } else {
         const balanced = balanceTeams(players, teamSize);
 
