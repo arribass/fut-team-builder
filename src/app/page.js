@@ -209,6 +209,25 @@ const assignFormationSlots = (teamArray, formName) => {
   return assignedPlayers;
 };
 
+const TEAM_COLOR_PRESETS = [
+  { id: 'white', defaultName: 'Equipo Blanco', emoji: '⚪', hex: '#f8fafc', textHex: '#0f172a', bgBadge: 'rgba(248, 250, 252, 0.15)', borderHex: 'rgba(248, 250, 252, 0.35)' },
+  { id: 'red', defaultName: 'Equipo Rojo', emoji: '🔴', hex: '#ef4444', textHex: '#ffffff', bgBadge: 'rgba(239, 68, 68, 0.15)', borderHex: 'rgba(239, 68, 68, 0.35)' },
+  { id: 'blue', defaultName: 'Equipo Azul', emoji: '🔵', hex: '#3b82f6', textHex: '#ffffff', bgBadge: 'rgba(59, 130, 246, 0.15)', borderHex: 'rgba(59, 130, 246, 0.35)' },
+  { id: 'yellow', defaultName: 'Equipo Amarillo', emoji: '🟡', hex: '#eab308', textHex: '#0f172a', bgBadge: 'rgba(234, 179, 8, 0.15)', borderHex: 'rgba(234, 179, 8, 0.35)' },
+  { id: 'green', defaultName: 'Equipo Verde', emoji: '🟢', hex: '#22c55e', textHex: '#ffffff', bgBadge: 'rgba(34, 197, 94, 0.15)', borderHex: 'rgba(34, 197, 94, 0.35)' },
+  { id: 'black', defaultName: 'Equipo Negro', emoji: '🖤', hex: '#64748b', textHex: '#ffffff', bgBadge: 'rgba(100, 116, 139, 0.25)', borderHex: 'rgba(100, 116, 139, 0.4)' },
+  { id: 'orange', defaultName: 'Equipo Naranja', emoji: '🟠', hex: '#f97316', textHex: '#ffffff', bgBadge: 'rgba(249, 115, 22, 0.15)', borderHex: 'rgba(249, 115, 22, 0.35)' },
+  { id: 'purple', defaultName: 'Equipo Morado', emoji: '🟣', hex: '#a855f7', textHex: '#ffffff', bgBadge: 'rgba(168, 85, 247, 0.15)', borderHex: 'rgba(168, 85, 247, 0.35)' },
+  { id: 'cyan', defaultName: 'Equipo Celeste', emoji: '🩵', hex: '#06b6d4', textHex: '#ffffff', bgBadge: 'rgba(6, 182, 212, 0.15)', borderHex: 'rgba(6, 182, 212, 0.35)' },
+  { id: 'pink', defaultName: 'Equipo Rosa', emoji: '🩷', hex: '#ec4899', textHex: '#ffffff', bgBadge: 'rgba(236, 72, 153, 0.15)', borderHex: 'rgba(236, 72, 153, 0.35)' },
+];
+
+const getTeamInfo = (colorKey, customName) => {
+  const preset = TEAM_COLOR_PRESETS.find(p => p.id === colorKey) || TEAM_COLOR_PRESETS[0];
+  const name = customName && customName.trim() ? customName.trim() : preset.defaultName;
+  return { ...preset, name };
+};
+
 export default function Home() {
   const [activeTab, setActiveTab] = useState('balancer'); // 'balancer' | 'tournament'
   const [actionsOpen, setActionsOpen] = useState(false);
@@ -224,11 +243,83 @@ export default function Home() {
   const [team1Formation, setTeam1Formation] = useState('4-4-2');
   const [team2Formation, setTeam2Formation] = useState('4-4-2');
 
+  const [team1ColorKey, setTeam1ColorKey] = useState('white');
+  const [team2ColorKey, setTeam2ColorKey] = useState('red');
+  const [team1CustomName, setTeam1CustomName] = useState('');
+  const [team2CustomName, setTeam2CustomName] = useState('');
+
   const [includePositions, setIncludePositions] = useState(true);
   const [includeReserves, setIncludeReserves] = useState(true);
   const [customFooter, setCustomFooter] = useState('');
   const [whatsappCopied, setWhatsappCopied] = useState(false);
   const [whatsappCollapsed, setWhatsappCollapsed] = useState(true);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(`fut-builder-colors-${orgId || 'default'}`);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.team1ColorKey) setTeam1ColorKey(parsed.team1ColorKey);
+        if (parsed.team2ColorKey) setTeam2ColorKey(parsed.team2ColorKey);
+        if (parsed.team1CustomName !== undefined) setTeam1CustomName(parsed.team1CustomName);
+        if (parsed.team2CustomName !== undefined) setTeam2CustomName(parsed.team2CustomName);
+      }
+    } catch (e) {
+      console.error('Error loading team colors', e);
+    }
+  }, [orgId]);
+
+  const saveTeamColors = (t1Key, t2Key, t1Name, t2Name) => {
+    try {
+      localStorage.setItem(`fut-builder-colors-${orgId || 'default'}`, JSON.stringify({
+        team1ColorKey: t1Key,
+        team2ColorKey: t2Key,
+        team1CustomName: t1Name,
+        team2CustomName: t2Name
+      }));
+    } catch (e) {
+      console.error('Error saving team colors', e);
+    }
+  };
+
+  const handleSelectTeam1Color = (presetId) => {
+    const preset = TEAM_COLOR_PRESETS.find(p => p.id === presetId);
+    setTeam1ColorKey(presetId);
+    let newName = team1CustomName;
+    if (!team1CustomName || TEAM_COLOR_PRESETS.some(p => p.defaultName === team1CustomName)) {
+      newName = preset ? preset.defaultName : '';
+      setTeam1CustomName(newName);
+    }
+    saveTeamColors(presetId, team2ColorKey, newName, team2CustomName);
+  };
+
+  const handleSelectTeam2Color = (presetId) => {
+    const preset = TEAM_COLOR_PRESETS.find(p => p.id === presetId);
+    setTeam2ColorKey(presetId);
+    let newName = team2CustomName;
+    if (!team2CustomName || TEAM_COLOR_PRESETS.some(p => p.defaultName === team2CustomName)) {
+      newName = preset ? preset.defaultName : '';
+      setTeam2CustomName(newName);
+    }
+    saveTeamColors(team1ColorKey, presetId, team1CustomName, newName);
+  };
+
+  const handleSwapTeamColors = () => {
+    const t1Key = team1ColorKey;
+    const t2Key = team2ColorKey;
+    const t1Name = team1CustomName;
+    const t2Name = team2CustomName;
+
+    setTeam1ColorKey(t2Key);
+    setTeam2ColorKey(t1Key);
+    setTeam1CustomName(t2Name);
+    setTeam2CustomName(t1Name);
+
+    saveTeamColors(t2Key, t1Key, t2Name, t1Name);
+  };
+
+  const t1Info = getTeamInfo(team1ColorKey, team1CustomName);
+  const t2Info = getTeamInfo(team2ColorKey, team2CustomName);
 
   const getAvailableFormations = () => {
     const allFormations = Object.keys(PITCH_FORMATIONS);
@@ -565,7 +656,7 @@ export default function Home() {
     text += `\n`;
 
     // Team 1
-    text += `🔴 *EQUIPO ROJO*\n`;
+    text += `${t1Info.emoji} *${t1Info.name.toUpperCase()}*\n`;
     teams.team1.forEach((p) => {
       let info = [];
       if (includePositions && p.position) info.push(p.position);
@@ -575,7 +666,7 @@ export default function Home() {
     });
 
     // Team 2
-    text += `\n⚪ *EQUIPO BLANCO*\n`;
+    text += `\n${t2Info.emoji} *${t2Info.name.toUpperCase()}*\n`;
     teams.team2.forEach((p) => {
       let info = [];
       if (includePositions && p.position) info.push(p.position);
@@ -806,15 +897,55 @@ Miércoles 18:00
             {teams ? (
               <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
 
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                    🎨 Personaliza colores y nombres:
+                  </span>
+                  <button 
+                    className="swap-teams-btn"
+                    onClick={handleSwapTeamColors}
+                    title="Intercambiar colores y nombres de los equipos"
+                  >
+                    🔄 Intercambiar Colores
+                  </button>
+                </div>
+
                 <div className="teams-grid">
                   <div
                     className={`team-column ${dragOverTeam === 'team1' ? 'drag-over' : ''} ${teams.team1.length >= teamSize ? 'team-complete' : 'team-incomplete'}`}
+                    style={{ borderColor: t1Info.borderHex, boxShadow: `0 4px 20px ${t1Info.bgBadge}` }}
                     onDragOver={(e) => handleDragOver(e, 'team1')}
                     onDragLeave={handleDragLeave}
                     onDrop={(e) => handleDrop(e, 'team1')}
                   >
-                    <div className="team-header-row">
-                      <h3 className="team-title team-red">🔴 Equipo Rojo</h3>
+                    <div className="team-header-row" style={{ alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', flex: 1, minWidth: '160px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                          <span style={{ fontSize: '1.25rem' }}>{t1Info.emoji}</span>
+                          <input
+                            type="text"
+                            className="team-name-input"
+                            value={team1CustomName}
+                            onChange={(e) => {
+                              setTeam1CustomName(e.target.value);
+                              saveTeamColors(team1ColorKey, team2ColorKey, e.target.value, team2CustomName);
+                            }}
+                            placeholder={t1Info.defaultName}
+                            style={{ color: t1Info.hex }}
+                          />
+                        </div>
+                        <div className="color-swatches">
+                          {TEAM_COLOR_PRESETS.map(preset => (
+                            <button
+                              key={`t1-swatch-${preset.id}`}
+                              className={`color-swatch-btn ${team1ColorKey === preset.id ? 'active' : ''}`}
+                              style={{ backgroundColor: preset.hex, color: preset.hex }}
+                              onClick={() => handleSelectTeam1Color(preset.id)}
+                              title={preset.defaultName}
+                            />
+                          ))}
+                        </div>
+                      </div>
                       <span className={`team-status ${teams.team1.length < teamSize ? 'status-incomplete' : 'status-complete'}`}>
                         {teams.team1.length} / {teamSize}
                       </span>
@@ -862,12 +993,39 @@ Miércoles 18:00
                   </div>
                   <div
                     className={`team-column ${dragOverTeam === 'team2' ? 'drag-over' : ''} ${teams.team2.length >= teamSize ? 'team-complete' : 'team-incomplete'}`}
+                    style={{ borderColor: t2Info.borderHex, boxShadow: `0 4px 20px ${t2Info.bgBadge}` }}
                     onDragOver={(e) => handleDragOver(e, 'team2')}
                     onDragLeave={handleDragLeave}
                     onDrop={(e) => handleDrop(e, 'team2')}
                   >
-                    <div className="team-header-row">
-                      <h3 className="team-title team-white">⚪ Equipo Blanco</h3>
+                    <div className="team-header-row" style={{ alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', flex: 1, minWidth: '160px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                          <span style={{ fontSize: '1.25rem' }}>{t2Info.emoji}</span>
+                          <input
+                            type="text"
+                            className="team-name-input"
+                            value={team2CustomName}
+                            onChange={(e) => {
+                              setTeam2CustomName(e.target.value);
+                              saveTeamColors(team1ColorKey, team2ColorKey, team1CustomName, e.target.value);
+                            }}
+                            placeholder={t2Info.defaultName}
+                            style={{ color: t2Info.hex }}
+                          />
+                        </div>
+                        <div className="color-swatches">
+                          {TEAM_COLOR_PRESETS.map(preset => (
+                            <button
+                              key={`t2-swatch-${preset.id}`}
+                              className={`color-swatch-btn ${team2ColorKey === preset.id ? 'active' : ''}`}
+                              style={{ backgroundColor: preset.hex, color: preset.hex }}
+                              onClick={() => handleSelectTeam2Color(preset.id)}
+                              title={preset.defaultName}
+                            />
+                          ))}
+                        </div>
+                      </div>
                       <span className={`team-status ${teams.team2.length < teamSize ? 'status-incomplete' : 'status-complete'}`}>
                         {teams.team2.length} / {teamSize}
                       </span>
@@ -1054,14 +1212,14 @@ Miércoles 18:00
         <div className="pitch-section">
           <div className="pitch-header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
             <div className="formation-selector" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <label style={{ fontWeight: 600, color: '#ef4444' }}>Formación Rojo: </label>
+              <label style={{ fontWeight: 600, color: t1Info.hex }}>Formación {t1Info.name}: </label>
               <select value={team1Formation} onChange={e => setTeam1Formation(e.target.value)} className="team-size-input" style={{ width: 'auto' }}>
                 {getAvailableFormations().map(f => <option key={f} value={f}>{f}</option>)}
               </select>
             </div>
             <h2 className="team-title" style={{ margin: 0 }}>Pizarra Táctica 📋</h2>
             <div className="formation-selector" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <label style={{ fontWeight: 600, color: '#f3f4f6' }}>Formación Blanco: </label>
+              <label style={{ fontWeight: 600, color: t2Info.hex }}>Formación {t2Info.name}: </label>
               <select value={team2Formation} onChange={e => setTeam2Formation(e.target.value)} className="team-size-input" style={{ width: 'auto' }}>
                 {getAvailableFormations().map(f => <option key={f} value={f}>{f}</option>)}
               </select>
@@ -1106,14 +1264,14 @@ Miércoles 18:00
               return (
                 <div
                   key={`pitch-t1-${p.name}`}
-                  className="pitch-player team-red-player"
+                  className="pitch-player"
                   style={style}
                   draggable="true"
                   onDragStart={(e) => handlePitchDragStart(e, 'team1', i)}
                   onDragOver={handlePitchDragOver}
                   onDrop={(e) => handlePlayerDrop(e, 'team1', i)}
                 >
-                  <div className="player-dot"></div>
+                  <div className="player-dot" style={{ background: t1Info.hex, borderColor: t1Info.id === 'white' ? '#94a3b8' : '#ffffff' }}></div>
                   <span className="pitch-player-name">{p.name}</span>
                 </div>
               );
@@ -1124,14 +1282,14 @@ Miércoles 18:00
               return (
                 <div
                   key={`pitch-t2-${p.name}`}
-                  className="pitch-player team-white-player"
+                  className="pitch-player"
                   style={style}
                   draggable="true"
                   onDragStart={(e) => handlePitchDragStart(e, 'team2', i)}
                   onDragOver={handlePitchDragOver}
                   onDrop={(e) => handlePlayerDrop(e, 'team2', i)}
                 >
-                  <div className="player-dot"></div>
+                  <div className="player-dot" style={{ background: t2Info.hex, borderColor: t2Info.id === 'white' ? '#94a3b8' : '#ffffff' }}></div>
                   <span className="pitch-player-name">{p.name}</span>
                 </div>
               );
@@ -1141,7 +1299,11 @@ Miércoles 18:00
       )}
         </>
       ) : (
-        <TournamentGenerator initialTeams={teams} />
+        <TournamentGenerator initialTeams={teams ? {
+          ...teams,
+          team1Name: `${t1Info.emoji} ${t1Info.name}`,
+          team2Name: `${t2Info.emoji} ${t2Info.name}`
+        } : null} />
       )}
     </main>
     </>

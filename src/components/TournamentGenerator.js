@@ -56,10 +56,10 @@ export default function TournamentGenerator({ initialTeams }) {
     }
 
     if (mode === 'teams') {
-      // Option 1: Red vs White team names
+      // Option 1: Custom team names & colors from balancer
       const balancerTeams = [];
-      if (initialTeams.team1 && initialTeams.team1.length > 0) balancerTeams.push("🔴 Equipo Rojo");
-      if (initialTeams.team2 && initialTeams.team2.length > 0) balancerTeams.push("⚪ Equipo Blanco");
+      if (initialTeams.team1 && initialTeams.team1.length > 0) balancerTeams.push(initialTeams.team1Name || "⚪ Equipo Blanco");
+      if (initialTeams.team2 && initialTeams.team2.length > 0) balancerTeams.push(initialTeams.team2Name || "🔴 Equipo Rojo");
       setInputTeamsText(balancerTeams.join('\n'));
     } else if (mode === 'players') {
       // Option 2: Individual player names (1vs1 tournament)
@@ -314,7 +314,7 @@ export default function TournamentGenerator({ initialTeams }) {
                       onClick={() => handleLoadFromBalancer('teams')}
                       style={{ flex: 1, fontSize: '0.75rem', justifyContent: 'center' }}
                     >
-                      🔴 vs ⚪ Equipos
+                      ⚡ Cargar Equipos
                     </button>
                     <button 
                       className="header-btn" 
