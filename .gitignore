@@ -45,4 +45,5 @@ next-env.d.ts
 /.wwebjs_cache/
 .initialized_groups.json
 .group_settings.json
+.misters.json
 

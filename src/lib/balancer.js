@@ -12,10 +12,11 @@ export function parseHeader(text) {
     const trimmed = line.trim();
     if (!trimmed) continue;
     
-    // If it starts with a number (like "1. "), reserve marker, etc., it's likely a player
+    // Stop if we hit a numbered player line or a team/category header line
     if (trimmed.match(/^([0-9]|R[0-9]|R[\.\s]|Reserva)/i)) break;
+    if (trimmed.match(/^(blancos|rojos|equipo|equipos|titulares|suplentes|reservas)\b/i)) break;
     
-    // If it's a separator, skip it but it might be the end of the header
+    // If it's a separator, skip it
     if (trimmed.match(/^[—\-\._\*]+$/)) continue;
     
     headerLines.push(trimmed);
@@ -46,9 +47,11 @@ export function parsePlayers(text) {
     // Skip separators like "———-" or "****"
     if (trimmed.match(/^[—\-\._\*]+$/)) return;
 
+    // Skip category/team headers (e.g. "Blancos ⚪️⚪️⚪️", "Rojos 🔴🔴", "Equipo 1", "Reservas", "Suplentes", "Blancos:", "Rojos:")
+    if (trimmed.match(/^(blancos|rojos|equipo\s*[0-9]*|equipos|titulares|suplentes|reservas)\b/i)) return;
+
     // Skip common date/time patterns if they don't look like players
     // e.g. "Miércoles 15 abril", "F11 a las 18.00"
-    // Only skip if it doesn't start with a player prefix
     if (!trimmed.match(/^([0-9]|R[0-9]|R[\.\s]|Reserva)/i)) {
       if (trimmed.match(/^(lunes|martes|miércoles|jueves|viernes|sábado|domingo)/i)) return;
       if (trimmed.match(/hora|hoy/i)) return;
