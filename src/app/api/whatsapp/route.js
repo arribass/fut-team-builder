@@ -108,6 +108,9 @@ export async function POST(request) {
         ];
         replyText = cucuList[Math.floor(Math.random() * cucuList.length)];
       }
+    } else if (trimmed === '/reset' || trimmed === '/reset-bot' || trimmed === '/resetbot' || trimmed === '/reiniciar') {
+      actionExecuted = 'reset_bot';
+      replyText = '🔄 *Reiniciando el bot...* Vuelvo en unos segundos.';
     } else if (trimmed.startsWith('/perra')) {
       actionExecuted = 'perra';
       const perraList = [
