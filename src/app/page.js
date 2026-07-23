@@ -1341,7 +1341,7 @@ Miércoles 18:00
       <div className="footer-inner">
         <p>© {new Date().getFullYear()} FUT Builder. Creado con ❤️ para organizar partidazos de fútbol.</p>
         <div className="footer-links">
-          <span className="footer-link-item">⚽ Negro y Rojo</span>
+          <span className="footer-link-item">⚽ Blanco y Rojo</span>
           <span className="footer-link-separator">•</span>
           <span className="footer-link-item">Equilibrador de Equipos</span>
         </div>
