@@ -210,7 +210,7 @@ const assignFormationSlots = (teamArray, formName) => {
 };
 
 const TEAM_COLOR_PRESETS = [
-  { id: 'white', defaultName: 'UNAV Blanco', emoji: '⚪', hex: '#f8fafc', textHex: '#0f172a', bgBadge: 'rgba(248, 250, 252, 0.15)', borderHex: 'rgba(248, 250, 252, 0.35)' },
+  { id: 'white', defaultName: 'UNAV Blanco', emoji: '⚪', hex: '#f8fafc', textHex: '#0f172a', bgBadge: 'rgba(15, 23, 42, 0.04)', borderHex: 'rgba(15, 23, 42, 0.15)' },
   { id: 'red', defaultName: 'UNAV Rojo', emoji: '🔴', hex: '#c8102e', textHex: '#ffffff', bgBadge: 'rgba(200, 16, 46, 0.15)', borderHex: 'rgba(200, 16, 46, 0.35)' },
   { id: 'blue', defaultName: 'Equipo Azul', emoji: '🔵', hex: '#3b82f6', textHex: '#ffffff', bgBadge: 'rgba(59, 130, 246, 0.15)', borderHex: 'rgba(59, 130, 246, 0.35)' },
   { id: 'yellow', defaultName: 'Equipo Amarillo', emoji: '🟡', hex: '#eab308', textHex: '#0f172a', bgBadge: 'rgba(234, 179, 8, 0.15)', borderHex: 'rgba(234, 179, 8, 0.35)' },
