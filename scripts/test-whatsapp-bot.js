@@ -6,35 +6,35 @@
 async function main() {
   const { parseHeader, parsePlayers, balanceTeams } = await import('../src/lib/balancer.js');
 
-  const sampleList = `Miércoles 18:30 - Campo F11
+  const sampleList = `Miércoles 18:30 - Campo UNAV
 
-1. Aranda
-2. Patxi
-3. Ramon
-4. Sergio I
+1. Juan
+2. Carlos
+3. Alejandro
+4. Sergio
 5. Nico
-6. Facu
-7. kevin
-8. Jose Ángel 
-9. David gut
-10. Julito 
-11. Geisler
-12. Moncho
-13. Max
-14. Julián Lemar
-15. Andrés 
-16. Iñaki DK
+6. Fernando
+7. Mario
+8. José
+9. David
+10. Julio
+11. Lucas
+12. Manuel
+13. Mateo
+14. Julián
+15. Andrés
+16. Iñaki
 17. Jon
-18. Rafa L
+18. Rafael
 19. Felipe
-20. Sebas
-21. Oscar
-22. Adrián 
+20. Sebastián
+21. Óscar
+22. Adrián
 23. Diego
-24. Santi
+24. Santiago
 ———-
-R1. Pablo V
-R2. Pierre`;
+R1. Pablo
+R2. Pedro`;
 
   function simulateBotResponse(inputMessage, teamSize = 11, orgId = 'Lunes-F11-Madrid') {
     const trimmed = inputMessage.trim().toLowerCase();

@@ -336,7 +336,7 @@ export default function TournamentGenerator({ initialTeams }) {
                       name="tournament_format"
                       checked={tournamentType === 'single_elimination'}
                       onChange={() => setTournamentType('single_elimination')}
-                      style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }}
+                      style={{ cursor: 'pointer', accentColor: 'var(--accent-red)' }}
                     />
                     <span className="toggle-label" style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }}>Eliminatoria (Playoff)</span>
                   </label>
@@ -346,7 +346,7 @@ export default function TournamentGenerator({ initialTeams }) {
                       name="tournament_format"
                       checked={tournamentType === 'round_robin'}
                       onChange={() => setTournamentType('round_robin')}
-                      style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }}
+                      style={{ cursor: 'pointer', accentColor: 'var(--accent-red)' }}
                     />
                     <span className="toggle-label" style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }}>Todos contra todos (Liga)</span>
                   </label>

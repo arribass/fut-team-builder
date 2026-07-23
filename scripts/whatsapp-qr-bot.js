@@ -2,7 +2,7 @@
  * WhatsApp QR Bot Runner (using whatsapp-web.js)
  * 
  * Instructions:
- * 1. Install dependencies: npm install whatsapp-web.js qrcode-terminal
+ * 1. Install dependencies: npm install
  * 2. Run script: node scripts/whatsapp-qr-bot.js
  * 3. Scan QR code displayed in terminal with WhatsApp -> Linked Devices
  */
@@ -25,14 +25,6 @@ const PERRA_RESPONSES = [
   '¡Respeto con el Míster del equipo! ⚽',
   '¡A ti te quería yo ver tirando un penalti! ⚽💨',
   '¡Tú sí que eres perra vieja jugando al fútbol! ⚽🔥',
-];
-
-const CUCHUDRULUS_RESPONSES = [
-  '🐊 ¡Cucudrulus al ataque! ⚽🔥',
-  '🐊 Cuidado con la mordida del Cucudrulus en el área chica... ⚽',
-  '🐊 ¡El Cucudrulus no perdona una contra de volea! ⚽💨',
-  '🐊 ¡Modo Cucudrulus salvaje activado! ⚽',
-  '🐊 ¿Quién ha invocado al gran Cucudrulus? ⚽👑',
 ];
 
 import fs from 'fs';
@@ -184,17 +176,6 @@ client.on('ready', async () => {
     console.log('ℹ️ Inicio silencioso activado. No se enviarán mensajes de inicio.');
     return;
   }
-
-  const targets = ['34638853446-1532102640@g.us', '34638853446@g.us'];
-  for (const target of targets) {
-    try {
-      console.log(`💬 Enviando mensaje de inicio a Cucudrulus (${target})...`);
-      await client.sendMessage(target, '🤖 *He volvido* 🐊');
-      console.log(`✅ Mensaje de inicio enviado con éxito a ${target}.`);
-    } catch (e) {
-      console.error(`Error al enviar mensaje de inicio a ${target}:`, e);
-    }
-  }
 });
 
 client.on('message_create', async (msg) => {
@@ -228,6 +209,20 @@ client.on('message_create', async (msg) => {
 
     const chatJid = isSelfChat ? msg.from : (msg.fromMe ? msg.to : msg.from);
 
+    // Override msg.reply to guarantee the bot replies quoting the user's message
+    const originalReply = msg.reply.bind(msg);
+    msg.reply = async (replyText, options = {}) => {
+      try {
+        return await client.sendMessage(chatJid, replyText, {
+          quotedMessageId: msg.id._serialized,
+          ...options
+        });
+      } catch (e) {
+        console.error('Error in custom msg.reply override, falling back:', e);
+        return await originalReply(replyText, options);
+      }
+    };
+
     // Consecutive message tracker per chat
     const senderDigits = senderPhone.replace(/\D/g, '');
     const activeChatId = (msg.from.endsWith('@g.us') ? msg.from : msg.to).split('@')[0];
@@ -242,82 +237,6 @@ client.on('message_create', async (msg) => {
     } else {
       global.consecutiveTracker[activeChatId].sender = senderDigits;
       global.consecutiveTracker[activeChatId].count = 1;
-    }
-
-    // Automatic reply for +34 683 43 20 36 in Cucudrulus group
-    const isCucudrulusGroup = msg.from && msg.from.includes('34638853446');
-    if (isGroup && isCucudrulusGroup && senderDigits === '34683432036') {
-      console.log('🤖 -> Detectado mensaje de +34 683 43 20 36 en Cucudrulus. Respondiendo con bolivianodetectado...');
-      const possibleAudioDirs = [
-        path.join(process.cwd(), 'public', 'assets', 'cucudrulus', 'audio'),
-        path.join(process.cwd(), 'src', 'assets', 'cucudrulus', 'audio'),
-        path.join(process.cwd(), 'assets', 'cucudrulus', 'audio')
-      ];
-
-      let audioFile = null;
-      for (const dir of possibleAudioDirs) {
-        if (fs.existsSync(dir)) {
-          const files = fs.readdirSync(dir);
-          const found = files.find(f => f.toLowerCase().includes('bolivianodetectado'));
-          if (found) {
-            audioFile = path.join(dir, found);
-            break;
-          }
-        }
-      }
-
-      if (audioFile) {
-        const media = MessageMedia.fromFilePath(audioFile);
-        media.mimetype = 'audio/ogg; codecs=opus';
-        await client.sendMessage(chatJid, media, {
-          sendAudioAsVoice: true,
-          quotedMessageId: msg.id._serialized
-        });
-        console.log(`✅ -> Enviado audio de bolivianodetectado en respuesta.`);
-      } else {
-        console.error('❌ -> No se encontró el archivo bolivianodetectado en las carpetas de audio.');
-      }
-    }
-
-    // Automatic reply for +34 660 97 38 34 in Cucudrulus group
-    if (isGroup && isCucudrulusGroup && senderDigits === '34660973834') {
-      console.log('🤖 -> Detectado mensaje de +34 660 97 38 34 en Cucudrulus. Respondiendo con sehadetectadounperuano...');
-      const possibleAudioDirs = [
-        path.join(process.cwd(), 'public', 'assets', 'cucudrulus', 'audio'),
-        path.join(process.cwd(), 'src', 'assets', 'cucudrulus', 'audio'),
-        path.join(process.cwd(), 'assets', 'cucudrulus', 'audio')
-      ];
-
-      let audioFile = null;
-      for (const dir of possibleAudioDirs) {
-        if (fs.existsSync(dir)) {
-          const files = fs.readdirSync(dir);
-          const found = files.find(f => f.toLowerCase().includes('peruano'));
-          if (found) {
-            audioFile = path.join(dir, found);
-            break;
-          }
-        }
-      }
-
-      if (audioFile) {
-        const media = MessageMedia.fromFilePath(audioFile);
-        media.mimetype = 'audio/ogg; codecs=opus';
-        await client.sendMessage(chatJid, media, {
-          sendAudioAsVoice: true,
-          quotedMessageId: msg.id._serialized
-        });
-        console.log(`✅ -> Enviado audio de sehadetectadounperuano en respuesta.`);
-      } else {
-        console.error('❌ -> No se encontró el archivo que contenga "peruano" en las carpetas de audio.');
-      }
-    }
-
-    // Referee Rule: Yellow Card for +34 622 61 33 35 if > 4 messages in a row
-    if (senderDigits === '34622613335' && global.consecutiveTracker[activeChatId].count > 4) {
-      console.log(`🟨 -> TARJETA AMARILLA emitida para +${senderDigits} por enviar ${global.consecutiveTracker[activeChatId].count} mensajes seguidos.`);
-      global.consecutiveTracker[activeChatId].count = 0; // Reset count
-      await msg.reply('🟨 *¡TARJETA AMARILLA!* 🟨\n\n⚠️ Te estás pasando... Llevas más de 4 mensajes seguidos en el chat. ¡Un poco de calma! 🤐');
     }
 
     // STRICT COMMAND FILTERING: Ignore any message that does NOT start with a slash or explicit ID query
@@ -370,16 +289,44 @@ client.on('message_create', async (msg) => {
       return;
     }
 
+    // Cooldown check for meme commands (1 minute)
+    let cmdKey = null;
+    if (trimmed.startsWith('/perra')) cmdKey = 'perra';
+    else if (trimmed.startsWith('/ardillita')) cmdKey = 'ardillita';
+    else if (trimmed.startsWith('/lola')) cmdKey = 'lola';
+
+    if (cmdKey) {
+      if (!global.memeCooldownTracker) {
+        global.memeCooldownTracker = {};
+      }
+      if (!global.memeWarnedUsers) {
+        global.memeWarnedUsers = {};
+      }
+
+      const cooldownKey = `${senderDigits}_${cmdKey}`;
+      const now = Date.now();
+      const lastUsed = global.memeCooldownTracker[cooldownKey] || 0;
+      const cooldownMs = 1 * 60 * 1000; // 1 minute
+
+      if (now - lastUsed < cooldownMs) {
+        const remainingMs = cooldownMs - (now - lastUsed);
+        const remainingSecs = Math.ceil(remainingMs / 1000);
+        console.log(`🔒 -> Cooldown activo para +${senderDigits} en el comando '${cmdKey}' (${remainingSecs}s restantes).`);
+        if (!global.memeWarnedUsers[senderDigits]) {
+          global.memeWarnedUsers[senderDigits] = true;
+          await msg.reply('corta corta ✂️ espera 1 minuto');
+        }
+        return;
+      }
+      global.memeCooldownTracker[cooldownKey] = now;
+    }
+
     // Command: Help / Ayuda (/help, /ayuda, /start)
     if (trimmed.startsWith('/help') || trimmed.startsWith('/ayuda') || trimmed === '/start') {
-      // Determine which help to show
       let targetHelp = 'general';
 
       if (!isGroup) {
-        // In a private/self chat, check if a specific group help was requested
-        if (trimmed.includes('cucudrulus')) {
-          targetHelp = 'cucudrulus';
-        } else if (trimmed.includes('strokes')) {
+        if (trimmed.includes('strokes')) {
           targetHelp = 'strokes';
         } else if (trimmed.includes('leyendasunav') || trimmed.includes('leyendas')) {
           targetHelp = 'leyendasunav';
@@ -387,12 +334,12 @@ client.on('message_create', async (msg) => {
           targetHelp = 'self-chat-menu';
         }
       } else {
-        // In a group, automatically show the corresponding group help
-        if (groupId.includes('34638853446')) {
-          targetHelp = 'cucudrulus';
-        } else if (groupId.includes('120363405952412742')) {
+        const strokesGroupId = process.env.STROKES_GROUP_ID;
+        const leyendasGroupId = process.env.LEYENDAS_GROUP_ID;
+
+        if (strokesGroupId && groupId.includes(strokesGroupId)) {
           targetHelp = 'strokes';
-        } else if (groupId.includes('120363420752689279')) {
+        } else if (leyendasGroupId && groupId.includes(leyendasGroupId)) {
           targetHelp = 'leyendasunav';
         } else {
           targetHelp = 'general';
@@ -402,16 +349,13 @@ client.on('message_create', async (msg) => {
       console.log(`🤖 -> Respondiendo comando de ayuda (${targetHelp}) en ${groupName}`);
 
       let helpReply = '';
-      if (targetHelp === 'cucudrulus') {
-        helpReply = `🐊 *Cucudrulus Help* 🐊\n\nComandos disponibles en este grupo:\n• */cucudrulus*: Envía un sticker aleatorio de Cucudrulus.\n• */cucudrulus gut*: Envía un sticker de Cucudrulus Gut.`;
-      } else if (targetHelp === 'strokes') {
+      if (targetHelp === 'strokes') {
         helpReply = `🐿️ *Strokes Help* 🐿️\n\nComandos disponibles en este grupo:\n• */equilibrar* [lista]: Equilibra los equipos de fútbol.\n• */ardillita*: Envía el sticker de la Ardillita.`;
       } else if (targetHelp === 'leyendasunav') {
         helpReply = `🏆 *Leyendas UNAV Help* 🏆\n\nComandos disponibles en este grupo:\n• */equilibrar* [lista]: Equilibra los equipos de Leyendas UNAV.\n• */ejemplo*: Muestra un ejemplo de lista formateada.\n• */id*: Muestra el ID de vinculación del grupo.`;
       } else if (targetHelp === 'self-chat-menu') {
-        helpReply = `⚽ *Menú de Ayuda* ⚽\n\nEscribe uno de estos comandos para ver la ayuda específica de cada grupo:\n• */help cucudrulus*\n• */help strokes*\n• */help leyendasunav*\n\n*(O utiliza cualquiera de los comandos generales como /equilibrar o /ejemplo)*`;
+        helpReply = `⚽ *Menú de Ayuda* ⚽\n\nEscribe uno de estos comandos para ver la ayuda específica de cada grupo:\n• */help strokes*\n• */help leyendasunav*\n\n*(O utiliza cualquiera de los comandos generales como /equilibrar o /ejemplo)*`;
       } else {
-        // General
         helpReply = `⚽ *Ayuda* ⚽\n\nComandos disponibles:\n• */equilibrar* [lista]: Equilibra los equipos de fútbol.\n• */make-teams-xl* [lista]: Equilibra equipos de 12 vs 12.\n• */ejemplo*: Muestra un ejemplo de lista formateada.\n• */id* o *id*: Muestra el ID de vinculación del grupo.\n\n🔧 *Configuración de Equipos (Solo Místers):*\n• */config-equipos* [Equipo1] vs [Equipo2]: Configura nombres y emojis. (Ej: */config-equipos ⚪ Blancos vs 🔴 Rojos*)\n• */set-team1* o */set-team2* [Nombre]: Cambia el nombre de un equipo.`;
       }
 
@@ -422,14 +366,15 @@ client.on('message_create', async (msg) => {
     // Command: Secret Help / Ayuda Secreta (/secreto, /secret, /ayudasecreta, /ayuda-secreta)
     if (trimmed === '/secreto' || trimmed === '/secret' || trimmed === '/ayudasecreta' || trimmed === '/ayuda-secreta') {
       console.log(`🤖 -> Respondiendo comando de ayuda secreta en ${groupName}`);
-      const secretHelpText = `🕵️‍♂️ *FUT Balancer Bot - Menú Secreto* 🕵️‍♂️\n\nComandos ocultos del bot:\n• */lola*: Envía un sticker de Lola 🐶 (solo permitido para Andrea y el dueño).\n• */cucudrulus-audio2*: Escucha un audio de Cucudrulus 🎵 (solo permitido dentro del grupo Cucudrulus).`;
+      const secretHelpText = `🕵️‍♂️ *FUT Balancer Bot - Menú Secreto* 🕵️‍♂️\n\nComandos ocultos del bot:\n• */lola*: Envía un sticker de Lola 🐶 (solo permitido para usuarios autorizados y el dueño).`;
       await msg.reply(secretHelpText);
       return;
     }
 
-    // Command: Ardillita (doesn't require init, only allowed in group 120363405952412742 or self-chat)
+    // Command: Ardillita (doesn't require init, only allowed in authorized group or self-chat)
     if (trimmed.startsWith('/ardillita')) {
-      const isAllowedGroup = groupId.includes('120363405952412742') || isSelfChat || !isGroup;
+      const strokesGroupId = process.env.STROKES_GROUP_ID;
+      const isAllowedGroup = (strokesGroupId && groupId.includes(strokesGroupId)) || isSelfChat || !isGroup;
       if (!isAllowedGroup) {
         console.log(`🔒 -> /ardillita denegado para el grupo '${groupName}' (${groupId}).`);
         return;
@@ -437,8 +382,6 @@ client.on('message_create', async (msg) => {
 
       console.log('🤖 -> Respondiendo comando /ardillita');
       const possibleDirs = [
-        path.join(process.cwd(), 'public', 'assets', 'strokes_amsterdam'),
-        path.join(process.cwd(), 'src', 'assets', 'strokes_amsterdam'),
         path.join(process.cwd(), 'assets', 'strokes_amsterdam')
       ];
 
@@ -457,7 +400,7 @@ client.on('message_create', async (msg) => {
       }
 
       if (foundFiles.length === 0) {
-        await msg.reply('🐿️ No encontré fotos en `public/assets/strokes_amsterdam` ni en `assets/strokes_amsterdam`.');
+        await msg.reply('🐿️ No encontré fotos en `assets/strokes_amsterdam`.');
         return;
       }
 
@@ -466,118 +409,42 @@ client.on('message_create', async (msg) => {
       await client.sendMessage(chatJid, media, {
         sendMediaAsSticker: true,
         stickerName: 'Ardillita 🐿️',
-        stickerAuthor: 'Cucudrulus',
+        stickerAuthor: 'FUT Balancer Bot',
         quotedMessageId: msg.id._serialized
       });
       console.log(`✅ -> Enviado sticker de Ardillita (${path.basename(ardillitaFile)}) desde ${activeDir}`);
       return;
     }
 
-    // Command: Cucudrulus (doesn't require init, only allowed in group 34638853446 or self-chat)
-    if (trimmed.startsWith('/cucudrulus')) {
-      const isAllowedGroup = groupId.includes('34638853446') || isSelfChat || !isGroup;
-      if (!isAllowedGroup) {
-        console.log(`🔒 -> /cucudrulus denegado para el grupo '${groupName}' (${groupId}).`);
-        return;
-      }
-
-      const isAudio = trimmed.includes('audio2');
-      const isGut = !isAudio && trimmed.includes('gut');
-
-      if (isAudio && !groupId.includes('34638853446')) {
-        console.log(`🔒 -> /cucudrulus-audio2 denegado (solo permitido en el grupo Cucudrulus).`);
-        return;
-      }
-
-      console.log(`🤖 -> Respondiendo comando /cucudrulus${isAudio ? ' audio2' : (isGut ? ' gut' : '')}`);
-      
-      const subDir = isAudio ? 'audio' : '';
-      const possibleDirs = [
-        path.join(process.cwd(), 'public', 'assets', 'cucudrulus', subDir),
-        path.join(process.cwd(), 'src', 'assets', 'cucudrulus', subDir),
-        path.join(process.cwd(), 'assets', 'cucudrulus', subDir)
-      ];
-
-      let foundFiles = [];
-      let activeDir = possibleDirs[0];
-      const fileRegex = isAudio 
-        ? /\.(ogg|mp3|wav|m4a|aac|mpeg|opus)$/i 
-        : /\.(png|jpe?g|gif|webp|bmp|jpeg)$/i;
-
-      for (const dir of possibleDirs) {
-        if (fs.existsSync(dir)) {
-          const files = fs.readdirSync(dir).filter(f => fileRegex.test(f));
-          if (files.length > 0) {
-            foundFiles = files.map(f => path.join(dir, f));
-            activeDir = dir;
-            break;
-          }
-        }
-      }
-
-      if (foundFiles.length === 0) {
-        if (isAudio) {
-          await msg.reply('🐊 No encontré audios en `public/assets/cucudrulus/audio` ni en `assets/cucudrulus/audio`. ¡Añade archivos de audio ahí para que el bot los envíe!');
-        } else {
-          await msg.reply('🐊 No encontré fotos en `public/assets/cucudrulus` ni en `src/assets/cucudrulus`. ¡Añade fotos de Cucudrulus ahí para que el bot las envíe!');
-        }
-        return;
-      }
-
-      let filteredFiles = foundFiles;
-      if (!isAudio) {
-        filteredFiles = isGut
-          ? foundFiles.filter(f => path.basename(f).toLowerCase().includes('gut'))
-          : foundFiles.filter(f => !path.basename(f).toLowerCase().includes('gut'));
-      }
-
-      if (filteredFiles.length === 0) {
-        await msg.reply(`🐊 No encontré fotos de Cucudrulus ${isGut ? 'que contengan "gut"' : '(sin "gut")'} en ${activeDir}.`);
-        return;
-      }
-
-      const randomFilePath = filteredFiles[Math.floor(Math.random() * filteredFiles.length)];
-      const media = MessageMedia.fromFilePath(randomFilePath);
-
-      if (isAudio) {
-        media.mimetype = 'audio/ogg; codecs=opus';
-        await client.sendMessage(chatJid, media, {
-          sendAudioAsVoice: true,
-          quotedMessageId: msg.id._serialized
-        });
-        console.log(`✅ -> Enviado audio de Cucudrulus (${path.basename(randomFilePath)}) desde ${activeDir}`);
-      } else {
-        await client.sendMessage(chatJid, media, {
-          sendMediaAsSticker: true,
-          stickerName: isGut ? 'Cucudrulus Gut 🐊' : 'Cucudrulus 🐊',
-          stickerAuthor: 'Cucudrulus',
-          quotedMessageId: msg.id._serialized
-        });
-        console.log(`✅ -> Enviado sticker de Cucudrulus${isGut ? ' Gut' : ''} (${path.basename(randomFilePath)}) desde ${activeDir}`);
-      }
-      return;
-    }
-
     // Command: Reset Bot (/reset, /reset-bot, /resetbot, /reiniciar)
-    if (trimmed === '/reset' || trimmed === '/reset-bot' || trimmed === '/resetbot' || trimmed === '/reiniciar') {
+    const isResetCommand = trimmed.startsWith('/reset') || trimmed.startsWith('/reiniciar');
+    if (isResetCommand) {
       if (!msg.fromMe) {
         await msg.reply('⛔ No tienes permiso para reiniciar el bot.');
         return;
       }
 
       console.log('🔄 -> Reiniciando el bot...');
-      await msg.reply('🔄 *Reiniciando el bot...* Vuelvo en unos segundos.');
+      const isSilentReset = trimmed.includes('--silent') || trimmed.includes('-s');
 
-      // Delay slightly to allow the message to be sent
+      if (!isSilentReset) {
+        await msg.reply('🔄 *Reiniciando el bot...* Vuelvo en unos segundos.');
+      } else {
+        await msg.reply('🔄 *Reiniciando el bot silenciosamente...*');
+      }
+
       setTimeout(() => {
         let spawnArgs = process.argv.slice(1);
-        const isFromCucudrulus = groupId.includes('34638853446');
-        if (isFromCucudrulus) {
+        
+        if (isSilentReset) {
+          if (!spawnArgs.includes('--silent')) {
+            spawnArgs.push('--silent');
+          }
+        } else {
           spawnArgs = spawnArgs.filter(arg => arg !== '--silent' && arg !== '-s');
         }
 
         if (process.platform === 'win32') {
-          // On Windows, launch the bot in a new console window using cmd.exe and start
           const child = spawn('cmd.exe', ['/c', 'start', process.argv[0], ...spawnArgs], {
             cwd: process.cwd(),
             detached: true,
@@ -585,7 +452,6 @@ client.on('message_create', async (msg) => {
           });
           child.unref();
         } else {
-          // On Unix-like systems, restart in the background inheriting stdio
           const child = spawn(process.argv[0], spawnArgs, {
             cwd: process.cwd(),
             detached: true,
@@ -598,61 +464,23 @@ client.on('message_create', async (msg) => {
       return;
     }
 
-    // Command: Standalone audio2 (/audio2)
-    if (trimmed === '/audio2') {
-      const isAllowedGroup = groupId.includes('34638853446') || isSelfChat || !isGroup;
-      if (!isAllowedGroup) {
-        console.log(`🔒 -> /audio2 denegado (solo permitido en el grupo Cucudrulus).`);
+    // Command: Shutdown Bot (/apagar, /shutdown, /off)
+    if (trimmed === '/apagar' || trimmed === '/shutdown' || trimmed === '/off') {
+      if (!msg.fromMe) {
+        await msg.reply('⛔ No tienes permiso para apagar el bot.');
         return;
       }
 
-      console.log(`🤖 -> Respondiendo comando /audio2`);
-      const possibleDirs = [
-        path.join(process.cwd(), 'public', 'assets', 'cucudrulus', 'audio'),
-        path.join(process.cwd(), 'src', 'assets', 'cucudrulus', 'audio'),
-        path.join(process.cwd(), 'assets', 'cucudrulus', 'audio')
-      ];
+      console.log('🔌 -> Apagando el bot...');
+      await msg.reply('🔌 *Apagando el bot...* ¡Hasta pronto! 👋');
 
-      let foundFiles = [];
-      let activeDir = possibleDirs[0];
-      const fileRegex = /\.(ogg|mp3|wav|m4a|aac|mpeg|opus)$/i;
-
-      for (const dir of possibleDirs) {
-        if (fs.existsSync(dir)) {
-          const files = fs.readdirSync(dir).filter(f => fileRegex.test(f));
-          if (files.length > 0) {
-            foundFiles = files.map(f => path.join(dir, f));
-            activeDir = dir;
-            break;
-          }
-        }
-      }
-
-      if (foundFiles.length === 0) {
-        await msg.reply('🐊 No encontré audios en `assets/cucudrulus/audio`. ¡Añade archivos de audio ahí!');
-        return;
-      }
-
-      const randomFilePath = foundFiles[Math.floor(Math.random() * foundFiles.length)];
-      const media = MessageMedia.fromFilePath(randomFilePath);
-      media.mimetype = 'audio/ogg; codecs=opus';
-
-      await client.sendMessage(chatJid, media, {
-        sendAudioAsVoice: true,
-        quotedMessageId: msg.id._serialized
-      });
-      console.log(`✅ -> Enviado audio (${path.basename(randomFilePath)}) desde ${activeDir}`);
+      setTimeout(() => {
+        process.exit(0);
+      }, 1000);
       return;
     }
 
-    // BLOCK Leyendas UNAV GROUP IF NOT INITIALIZED FIRST
-    const requiresInitialization = groupId.includes('120363420752689279');
-    if (requiresInitialization && !initializedGroups.has(groupId) && isGroup) {
-      console.log(`🔒 -> El grupo '${groupName}' (${groupId}) NO ha sido inicializado con '/fut-team-balancer init'. Comando ignorado.`);
-      return;
-    }
-
-    // Command 3: Perra
+    // Command: Perra
     if (trimmed.startsWith('/perra')) {
       console.log('🤖 -> Respondiendo comando /perra');
       const randomResponse = PERRA_RESPONSES[Math.floor(Math.random() * PERRA_RESPONSES.length)];
@@ -660,21 +488,19 @@ client.on('message_create', async (msg) => {
       return;
     }
 
-    // Command 4: Lola
+    // Command: Lola
     if (trimmed.startsWith('/lola')) {
       const senderDigits = senderPhone.replace(/\D/g, '');
-      const isAllowedLolaUser = msg.fromMe || senderDigits === '34691537442';
+      const isAllowedLolaUser = msg.fromMe || (process.env.LOLA_ALLOWED_PHONE && senderDigits === process.env.LOLA_ALLOWED_PHONE);
 
       if (!isAllowedLolaUser) {
-        console.log(`🔒 -> /lola denegado para +${senderPhone} (solo permitido para ti y Andrea).`);
+        console.log(`🔒 -> /lola denegado para +${senderPhone} (solo permitido para administradores).`);
         await msg.reply('⛔ No tienes permiso para ejecutar este comando.');
         return;
       }
 
       console.log('🤖 -> Respondiendo comando /lola');
       const possibleDirs = [
-        path.join(process.cwd(), 'public', 'assets', 'lola'),
-        path.join(process.cwd(), 'src', 'assets', 'lola'),
         path.join(process.cwd(), 'assets', 'lola')
       ];
 
@@ -693,23 +519,24 @@ client.on('message_create', async (msg) => {
       }
 
       if (foundFiles.length === 0) {
-        await msg.reply('🐶 No encontré fotos en `public/assets/lola` ni en `src/assets/lola`. ¡Añade fotos de Lola ahí para que el bot las envíe!');
+        await msg.reply('🐶 No encontré fotos en `assets/lola`. ¡Añade fotos de Lola ahí!');
         return;
       }
 
       const randomFilePath = foundFiles[Math.floor(Math.random() * foundFiles.length)];
       const media = MessageMedia.fromFilePath(randomFilePath);
+      const stickerAuthor = 'FUT Balancer Bot';
       await client.sendMessage(chatJid, media, {
         sendMediaAsSticker: true,
         stickerName: 'Lola 🐶',
-        stickerAuthor: 'FUT Balancer Bot',
+        stickerAuthor: stickerAuthor,
         quotedMessageId: msg.id._serialized
       });
       console.log(`✅ -> Enviado sticker de Lola (${path.basename(randomFilePath)}) desde ${activeDir}`);
       return;
     }
 
-    // Command 5: Ejemplo
+    // Command: Ejemplo
     if (trimmed.startsWith('/ejemplo')) {
       console.log('🤖 -> Enviando lista de EJEMPLO');
       const sampleList = `/equilibrar\nMiércoles 18:30 - Campo F11\n\n1. Aranda\n2. Patxi\n3. Ramon\n4. Sergio I\n5. Nico\n6. Facu\n7. Kevin\n8. Jose Ángel\n9. David gut\n10. Julito\n11. Geisler\n12. Moncho\n13. Max\n14. Julián Lemar\n15. Andrés\n16. Iñaki DK\n17. Jon\n18. Rafa L\n19. Felipe\n20. Sebas\n———-\nR1. Pablo V\nR2. Pierre`;
@@ -717,7 +544,7 @@ client.on('message_create', async (msg) => {
       return;
     }
 
-    // Command: Hacer Míster (grant permission to someone by replying/quoting their message)
+    // Command: Hacer Míster
     if (trimmed.startsWith('/hacer-mister') || trimmed.startsWith('/hacermister') || trimmed.startsWith('/add-mister')) {
       if (!msg.fromMe) {
         await msg.reply('⛔ No tienes permiso para nombrar Místers.');
@@ -725,7 +552,8 @@ client.on('message_create', async (msg) => {
       }
 
       let targetPhone = '';
-      if (msg.hasQuotedMsg) {
+      const hasQuote = msg.hasQuotedMsg || !!(msg._data && msg._data.quotedMsg);
+      if (hasQuote) {
         const quotedMsg = msg._data?.quotedMsg;
         if (quotedMsg && (quotedMsg.author || quotedMsg.from)) {
           targetPhone = (quotedMsg.author || quotedMsg.from).split('@')[0].split('-')[0].replace(/\D/g, '');
@@ -758,7 +586,8 @@ client.on('message_create', async (msg) => {
       }
 
       let targetPhone = '';
-      if (msg.hasQuotedMsg) {
+      const hasQuote = msg.hasQuotedMsg || !!(msg._data && msg._data.quotedMsg);
+      if (hasQuote) {
         const quotedMsg = msg._data?.quotedMsg;
         if (quotedMsg && (quotedMsg.author || quotedMsg.from)) {
           targetPhone = (quotedMsg.author || quotedMsg.from).split('@')[0].split('-')[0].replace(/\D/g, '');
@@ -783,7 +612,7 @@ client.on('message_create', async (msg) => {
       return;
     }
 
-    // Command 6: Config Teams (/set-team1, /set-team2, /config-equipos, /equipo1, /equipo2)
+    // Command: Config Teams
     if (
       trimmed.startsWith('/set-team') ||
       trimmed.startsWith('/set team') ||
@@ -875,7 +704,7 @@ client.on('message_create', async (msg) => {
       return;
     }
 
-    // Command 7: Team balancing (/make-teams, /make-teams-xl, /equilibrar, /hacer-equipos, /balance, /generar, /equipos)
+    // Command: Team balancing
     const isTeamBalanceCommand = (
       trimmed.startsWith('/make-teams') ||
       trimmed.startsWith('/make-team') ||
@@ -901,15 +730,14 @@ client.on('message_create', async (msg) => {
 
       let fullText = text;
 
-      if (msg.hasQuotedMsg) {
+      const hasQuote = msg.hasQuotedMsg || !!(msg._data && msg._data.quotedMsg);
+      if (hasQuote) {
         let quotedBody = msg._data?.quotedMsg?.body || msg._data?.quotedMsg?.caption || '';
         if (!quotedBody) {
           try {
             const quotedMsg = await msg.getQuotedMessage();
             if (quotedMsg) quotedBody = quotedMsg.body || quotedMsg.caption || '';
-          } catch (e) {
-            // Ignore Puppeteer fetch errors for uncached messages
-          }
+          } catch (e) { }
         }
         if (quotedBody) {
           console.log(`💬 -> Cita detectada: "${quotedBody.replace(/\n/g, ' ').substring(0, 50)}..."`);
@@ -967,26 +795,7 @@ async function handleShutdown() {
   if (isShuttingDown) return;
   isShuttingDown = true;
   console.log('\n🛑 Recibida señal de apagado (Ctrl+C). Cerrando bot...');
-  try {
-    if (client && client.info && lastActiveChatId) {
-      const isCucudrulus = lastActiveChatId.includes('34638853446');
-      const cleanMy = client.info?.wid?._serialized ? client.info.wid._serialized.replace(/:.*@/, '@') : '';
-      const cleanLast = lastActiveChatId.replace(/:.*@/, '@');
-      const isSelf = cleanLast === cleanMy;
-
-      if (isCucudrulus || isSelf) {
-        console.log(`💬 Enviando mensaje de despedida a la última conversación activa (${lastActiveChatId})...`);
-        await client.sendMessage(lastActiveChatId, '🤖 *Me piro a actualizarme...* ¡Vuelvo en un rato! ⚡');
-        console.log('✅ Mensaje de despedida enviado con éxito.');
-      } else {
-        console.log(`ℹ️ No se envía mensaje de despedida porque el chat (${lastActiveChatId}) no es Cucudrulus ni el chat propio.`);
-      }
-    }
-  } catch (e) {
-    console.error('Error al enviar mensaje de despedida:', e);
-  } finally {
-    process.exit(0);
-  }
+  process.exit(0);
 }
 
 process.on('SIGINT', handleShutdown);

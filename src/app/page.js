@@ -210,8 +210,8 @@ const assignFormationSlots = (teamArray, formName) => {
 };
 
 const TEAM_COLOR_PRESETS = [
-  { id: 'white', defaultName: 'Equipo Blanco', emoji: '⚪', hex: '#f8fafc', textHex: '#0f172a', bgBadge: 'rgba(248, 250, 252, 0.15)', borderHex: 'rgba(248, 250, 252, 0.35)' },
-  { id: 'red', defaultName: 'Equipo Rojo', emoji: '🔴', hex: '#ef4444', textHex: '#ffffff', bgBadge: 'rgba(239, 68, 68, 0.15)', borderHex: 'rgba(239, 68, 68, 0.35)' },
+  { id: 'white', defaultName: 'UNAV Blanco', emoji: '⚪', hex: '#f8fafc', textHex: '#0f172a', bgBadge: 'rgba(248, 250, 252, 0.15)', borderHex: 'rgba(248, 250, 252, 0.35)' },
+  { id: 'red', defaultName: 'UNAV Rojo', emoji: '🔴', hex: '#c8102e', textHex: '#ffffff', bgBadge: 'rgba(200, 16, 46, 0.15)', borderHex: 'rgba(200, 16, 46, 0.35)' },
   { id: 'blue', defaultName: 'Equipo Azul', emoji: '🔵', hex: '#3b82f6', textHex: '#ffffff', bgBadge: 'rgba(59, 130, 246, 0.15)', borderHex: 'rgba(59, 130, 246, 0.35)' },
   { id: 'yellow', defaultName: 'Equipo Amarillo', emoji: '🟡', hex: '#eab308', textHex: '#0f172a', bgBadge: 'rgba(234, 179, 8, 0.15)', borderHex: 'rgba(234, 179, 8, 0.35)' },
   { id: 'green', defaultName: 'Equipo Verde', emoji: '🟢', hex: '#22c55e', textHex: '#ffffff', bgBadge: 'rgba(34, 197, 94, 0.15)', borderHex: 'rgba(34, 197, 94, 0.35)' },
@@ -716,35 +716,35 @@ export default function Home() {
 
   const handleExample = () => {
 
-    const exampleList = `Miércoles 18:30 - Campo F11
+    const exampleList = `Miércoles 18:30 - Campo UNAV
 
-1. Aranda
-2. Patxi
-3. Ramon
-4. Sergio I
+1. Juan
+2. Carlos
+3. Alejandro
+4. Sergio
 5. Nico
-6. Facu
-7. kevin
-8. Jose Ángel 
-9. David gut
-10. Julito 
-11. Geisler
-12. Moncho
-13. Max
-14. Julián Lemar
-15. Andrés 
-16. Iñaki DK
+6. Fernando
+7. Mario
+8. José
+9. David
+10. Julio
+11. Lucas
+12. Manuel
+13. Mateo
+14. Julián
+15. Andrés
+16. Iñaki
 17. Jon
-18. Rafa L
+18. Rafael
 19. Felipe
-20. Sebas
-21. Oscar
-22. Adrián 
+20. Sebastián
+21. Óscar
+22. Adrián
 23. Diego
-24. Santi
+24. Santiago
 ———-
-R1. Pablo V
-R2. Pierre`;
+R1. Pablo
+R2. Pedro`;
     setInputText(exampleList);
   };
 
@@ -755,7 +755,7 @@ R2. Pierre`;
           <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
             <div className="logo">
               <span className="logo-emoji">⚽</span>
-              <span className="logo-text">FUT<span className="logo-highlight">BUILDER</span></span>
+              <span className="logo-text">FUT<span className="logo-highlight">UNAV</span></span>
             </div>
 
             <div className="app-tabs">
@@ -807,7 +807,7 @@ R2. Pierre`;
                         <button 
                           className="dropdown-item" 
                           onClick={() => { handleSaveAllPlayers(); setActionsOpen(false); }}
-                          style={{ color: savedFeedback.all ? 'var(--accent-green)' : '' }}
+                          style={{ color: savedFeedback.all ? 'var(--accent-red)' : '' }}
                         >
                           <span>{savedFeedback.all ? '✓' : '💾'}</span> Guardar Preferencias
                         </button>

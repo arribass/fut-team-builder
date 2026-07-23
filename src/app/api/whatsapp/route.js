@@ -66,6 +66,8 @@ export async function POST(request) {
     let replyText = '';
     let actionExecuted = 'balance';
 
+    const botName = 'FUT Balancer Bot';
+
     const isInitCommand = (
       trimmed === '/fut-team-balancer init' ||
       trimmed === '/init' ||
@@ -77,40 +79,16 @@ export async function POST(request) {
 
     if (isInitCommand) {
       actionExecuted = 'get_org_id';
-      replyText = `⚽ *FUT Team Balancer Bot Inicializado* ⚽\n\n🔑 *ID de Organización*: *${orgId}*\n\n✅ *Grupo vinculado.* Usa */equilibrar* o */make-team* para generar equipos.`;
+      replyText = `⚽ *${botName} Inicializado* ⚽\n\n🔑 *ID de Organización*: *${orgId}*\n\n✅ *Grupo vinculado.* Usa */equilibrar* o */make-team* para generar equipos.`;
     } else if (trimmed === '/ayuda' || trimmed === '/help' || trimmed === '/start') {
       actionExecuted = 'help';
-      replyText = `⚽ *FUT Team Balancer Bot* ⚽\n\nComandos disponibles:\n\n1️⃣ *Equilibrar Equipos*:\nEscribe */equilibrar* o */make-team* junto con la lista de jugadores.\n\n2️⃣ *Ver ID de Grupo*:\nEscribe *dime tu id de organizacion* o */id*.\n\n3️⃣ *Ver un ejemplo*:\nEscribe */ejemplo* para ver una lista para probar.`;
+      replyText = `⚽ *${botName}* ⚽\n\nComandos disponibles:\n\n1️⃣ *Equilibrar Equipos*:\nEscribe */equilibrar* o */make-team* junto con la lista de jugadores.\n\n2️⃣ *Ver ID de Grupo*:\nEscribe *dime tu id de organizacion* o */id*.\n\n3️⃣ *Ver un ejemplo*:\nEscribe */ejemplo* para ver una lista para probar.`;
     } else if (trimmed === '/ayudasecreta' || trimmed === '/ayuda-secreta' || trimmed === '/secreto' || trimmed === '/secret') {
       actionExecuted = 'secret_help';
-      replyText = `🕵️‍♂️ *FUT Balancer Bot - Menú Secreto* 🕵️‍♂️\n\nShhh... Has desbloqueado los comandos ocultos:\n\n• */lola*: Envía una foto aleatoria de Lola 🐶\n• */perra*: Frase aleatoria del Míster ⚽\n• */cucudrulus*: Invoca la fuerza del Cucudrulus 🐊 (añade *gut* para el modo GUT)\n• */cucudrulus-audio2*: Escucha un audio de Cucudrulus 🎵\n• */ardillita*: Invoca la fuerza de la ardillita 🐿️`;
+      replyText = `🕵️‍♂️ *${botName} - Menú Secreto* 🕵️‍♂️\n\nShhh... Has desbloqueado los comandos ocultos:\n\n• */lola*: Envía un sticker de Lola 🐶\n• */perra*: Frase aleatoria del Míster ⚽\n• */ardillita*: Invoca la fuerza de la ardillita 🐿️`;
     } else if (trimmed.startsWith('/ardillita')) {
       actionExecuted = 'ardillita';
       replyText = '🐿️ ¡Ardillita al ataque! ⚽🔥';
-    } else if (trimmed.startsWith('/cucudrulus')) {
-      const isAudio = trimmed.includes('audio2');
-      const isGut = !isAudio && trimmed.includes('gut');
-      
-      if (isAudio) {
-        actionExecuted = 'cucudrulus_audio2';
-        replyText = '🎵 *[Audio de Cucudrulus]* 🐊';
-      } else if (isGut) {
-        actionExecuted = 'cucudrulus_gut';
-        replyText = '🐊 ¡Cucudrulus GUT al ataque! ⚽🔥';
-      } else {
-        actionExecuted = 'cucudrulus';
-        const cucuList = [
-          '🐊 ¡Cucudrulus al ataque! ⚽🔥',
-          '🐊 Cuidado con la mordida del Cucudrulus en el área chica... ⚽',
-          '🐊 ¡El Cucudrulus no perdona una contra de volea! ⚽💨',
-          '🐊 ¡Modo Cucudrulus salvaje activado! ⚽',
-          '🐊 ¿Quién ha invocado al gran Cucudrulus? ⚽👑',
-        ];
-        replyText = cucuList[Math.floor(Math.random() * cucuList.length)];
-      }
-    } else if (trimmed === '/reset' || trimmed === '/reset-bot' || trimmed === '/resetbot' || trimmed === '/reiniciar') {
-      actionExecuted = 'reset_bot';
-      replyText = '🔄 *Reiniciando el bot...* Vuelvo en unos segundos.';
     } else if (trimmed.startsWith('/perra')) {
       actionExecuted = 'perra';
       const perraList = [
@@ -125,7 +103,7 @@ export async function POST(request) {
       replyText = perraList[Math.floor(Math.random() * perraList.length)];
     } else if (trimmed.startsWith('/ejemplo')) {
       actionExecuted = 'sample';
-      replyText = `/equilibrar\nMiércoles 18:30 - Campo F11\n\n1. Aranda\n2. Patxi\n3. Ramon\n4. Sergio I\n5. Nico\n6. Facu\n7. Kevin\n8. Jose Ángel\n9. David gut\n10. Julito\n11. Geisler\n12. Moncho\n13. Max\n14. Julián Lemar\n15. Andrés\n16. Iñaki DK\n17. Jon\n18. Rafa L\n19. Felipe\n20. Sebas\n———-\nR1. Pablo V\nR2. Pierre`;
+      replyText = `/equilibrar\nMiércoles 18:30 - Campo UNAV\n\n1. Juan\n2. Carlos\n3. Alejandro\n4. Sergio\n5. Nico\n6. Fernando\n7. Mario\n8. José\n9. David\n10. Julio\n11. Lucas\n12. Manuel\n13. Mateo\n14. Julián\n15. Andrés\n16. Iñaki\n17. Jon\n18. Rafael\n19. Felipe\n20. Sebastián\n———-\nR1. Pablo\nR2. Pedro`;
     } else if (
       trimmed.startsWith('/make-teams') ||
       trimmed.startsWith('/make-team') ||
