@@ -1,8 +1,8 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "FUT UNAV | Equilibrador de Equipos",
-  description: "Genera equipos de fútbol equilibrados automáticamente para el grupo de fútbol de la UNAV.",
+  title: "FUT Builder | Equilibrador de Equipos",
+  description: "Genera equipos de fútbol equilibrados automáticamente.",
 };
 
 export default function RootLayout({ children }) {

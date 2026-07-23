@@ -1,15 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Outfit:wght@400;700&display=swap');
 
 :root {
-  --bg-color: #f8fafc;
-  --card-bg: #ffffff;
-  --card-border: rgba(0, 0, 0, 0.06);
+  --bg-color: #08090c;
+  --card-bg: #111422;
+  --card-border: rgba(255, 255, 255, 0.08);
   --accent-red: #c8102e;
-  --accent-white: #ffffff;
-  --accent-red-hover: #a80f24;
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --glass: rgba(255, 255, 255, 0.8);
+  --accent-white: #f8fafc;
+  --accent-red-hover: #b00f28;
+  --text-primary: #f9fafb;
+  --text-secondary: #94a3b8;
+  --glass: rgba(17, 20, 34, 0.75);
 }
 
 * {
@@ -26,8 +26,8 @@ body {
   display: flex;
   flex-direction: column;
   background-image: 
-    radial-gradient(at 0% 0%, rgba(200, 16, 46, 0.04) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(200, 16, 46, 0.02) 0px, transparent 50%);
+    radial-gradient(at 0% 0%, rgba(200, 16, 46, 0.12) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(255, 255, 255, 0.03) 0px, transparent 50%);
 }
 
 h1, h2, h3 {
@@ -48,7 +48,7 @@ main {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(248, 250, 252, 0.85);
+  background: rgba(5, 7, 10, 0.85);
   backdrop-filter: blur(16px);
   padding: 1rem 2rem;
   border-bottom: 1px solid var(--card-border);
@@ -170,13 +170,13 @@ main {
   position: absolute;
   right: 0;
   top: calc(100% + 0.5rem);
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(15, 23, 42, 0.95);
   backdrop-filter: blur(20px);
   border: 1px solid var(--card-border);
   border-radius: 1rem;
   padding: 0.5rem;
   min-width: 230px;
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.6);
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
@@ -214,17 +214,17 @@ main {
 }
 
 .dropdown-item:hover {
-  background: rgba(0, 0, 0, 0.04);
+  background: rgba(255, 255, 255, 0.08);
   color: var(--text-primary);
 }
 
 .dropdown-item.text-danger {
-  color: #dc2626;
+  color: #f87171;
 }
 
 .dropdown-item.text-danger:hover {
-  background: rgba(239, 68, 68, 0.08);
-  color: #b91c1c;
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
 }
 
 .dropdown-divider {
@@ -302,14 +302,14 @@ main {
 }
 
 .card:hover {
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
 }
 
 .textarea-container {
   flex: 1;
   position: relative;
-  background: #f8fafc;
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--card-border);
   border-radius: 1rem;
 }
 
@@ -341,7 +341,7 @@ textarea::placeholder {
 }
 
 .team-size-input {
-  background: #f1f5f9;
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--card-border);
   color: var(--text-primary);
   padding: 0.5rem;
@@ -429,7 +429,7 @@ textarea::placeholder {
 }
 
 .team-column {
-  background: #f8fafc;
+  background: rgba(255, 255, 255, 0.02);
   border-radius: 1rem;
   padding: 1rem;
   border: 1px solid var(--card-border);
@@ -449,9 +449,9 @@ textarea::placeholder {
 }
 
 .team-column.team-complete {
-  border-color: rgba(71, 85, 105, 0.2);
-  background: rgba(255, 255, 255, 0.4);
-  box-shadow: 0 4px 20px -10px rgba(71, 85, 105, 0.05);
+  border-color: rgba(248, 250, 252, 0.35);
+  background: rgba(248, 250, 252, 0.02);
+  box-shadow: 0 4px 20px -10px rgba(248, 250, 252, 0.25);
 }
 
 .team-title {
@@ -591,9 +591,8 @@ textarea::placeholder {
 }
 
 .player-item {
-  background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--card-border);
   padding: 0.65rem 0.75rem;
   border-radius: 0.75rem;
   font-size: 0.95rem;
@@ -626,7 +625,7 @@ textarea::placeholder {
   gap: 0.6rem;
   flex-wrap: wrap;
   padding-top: 0.35rem;
-  border-top: 1px dashed rgba(0, 0, 0, 0.06);
+  border-top: 1px dashed rgba(255, 255, 255, 0.08);
 }
 
 .toggle-section {
@@ -647,7 +646,7 @@ textarea::placeholder {
 .toggle-divider {
   width: 1px;
   height: 16px;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.15);
   margin: 0 0.1rem;
 }
 
@@ -657,8 +656,8 @@ textarea::placeholder {
 }
 
 .pos-badge, .side-badge {
-  background: rgba(0, 0, 0, 0.03);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--card-border);
   color: var(--text-secondary);
   font-size: 0.65rem;
   padding: 0.18rem 0.4rem;
@@ -669,7 +668,7 @@ textarea::placeholder {
 }
 
 .pos-badge:hover, .side-badge:hover {
-  background: rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .pos-badge.active {
@@ -1001,11 +1000,11 @@ textarea::placeholder {
 /* WhatsApp Generator Styles */
 .whatsapp-card {
   border: 1px solid rgba(37, 211, 102, 0.2);
-  background: var(--card-bg) !important;
+  background: rgba(15, 23, 42, 0.8) !important;
 }
 
 .whatsapp-card:hover {
-  box-shadow: 0 10px 30px -10px rgba(37, 211, 102, 0.08);
+  box-shadow: 0 10px 30px -10px rgba(37, 211, 102, 0.15);
 }
 
 .emoji-input {
@@ -1034,30 +1033,30 @@ textarea::placeholder {
 .whatsapp-preview-container {
   border-radius: 1rem;
   overflow: hidden;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 .whatsapp-preview-header {
-  background: #f0f2f5;
+  background: #202c33;
   padding: 0.5rem 1rem;
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .whatsapp-avatar {
   width: 32px;
   height: 32px;
-  background: var(--accent-red);
+  background: #00a884;
   color: white;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.1rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
 }
 
 .whatsapp-chat-info {
@@ -1066,19 +1065,19 @@ textarea::placeholder {
 }
 
 .whatsapp-chat-name {
-  color: #111b21;
+  color: #e9edef;
   font-size: 0.85rem;
   font-weight: 600;
 }
 
 .whatsapp-chat-status {
-  color: #667781;
+  color: #8696a0;
   font-size: 0.7rem;
 }
 
 .whatsapp-preview-body {
-  background-color: #efeae2;
-  background-image: radial-gradient(rgba(37, 211, 102, 0.06) 1px, transparent 0);
+  background-color: #0b141a;
+  background-image: radial-gradient(rgba(37, 211, 102, 0.03) 1px, transparent 0);
   background-size: 16px 16px;
   padding: 1rem;
   min-height: 180px;
@@ -1090,13 +1089,13 @@ textarea::placeholder {
 }
 
 .whatsapp-bubble {
-  background: #d9fdd3;
-  color: #111b21;
+  background: #005c4b;
+  color: #e9edef;
   padding: 0.5rem 0.75rem 1.25rem 0.75rem;
   border-radius: 8px 0px 8px 8px;
   max-width: 85%;
   position: relative;
-  box-shadow: 0 1px 0.5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 0.5px rgba(0, 0, 0, 0.13);
   animation: bubblePop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
@@ -1112,7 +1111,7 @@ textarea::placeholder {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   font-size: 0.85rem;
   line-height: 1.35;
-  color: #111b21;
+  color: #e9edef;
 }
 
 .whatsapp-time {
@@ -1120,7 +1119,7 @@ textarea::placeholder {
   bottom: 3px;
   right: 7px;
   font-size: 0.65rem;
-  color: #667781;
+  color: rgba(233, 237, 239, 0.6);
   display: flex;
   align-items: center;
   gap: 2px;
@@ -1809,7 +1808,7 @@ textarea::placeholder {
 /* Footer Styles */
 .main-footer {
   margin-top: 4rem;
-  background: rgba(248, 250, 252, 0.8);
+  background: rgba(5, 7, 10, 0.85);
   border-top: 1px solid var(--card-border);
   padding: 1.5rem 2rem;
   width: 100%;
@@ -1836,7 +1835,7 @@ textarea::placeholder {
 }
 
 .footer-link-separator {
-  color: rgba(0, 0, 0, 0.1);
+  color: rgba(255, 255, 255, 0.2);
 }
 
 @media (max-width: 768px) {
