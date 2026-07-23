@@ -592,55 +592,90 @@ textarea::placeholder {
 
 .player-item {
   background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.05);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.5rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.75rem;
   font-size: 0.95rem;
   animation: fadeIn 0.3s ease forwards;
   transition: transform 0.2s ease, background 0.2s ease;
   display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.player-item-header {
+  display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+  width: 100%;
 }
 
 .player-name {
-  font-weight: 600;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .player-toggles {
   display: flex;
-  justify-content: space-between;
-  gap: 0.5rem;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  padding-top: 0.35rem;
+  border-top: 1px dashed rgba(0, 0, 0, 0.06);
+}
+
+.toggle-section {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.toggle-label {
+  font-size: 0.6rem;
+  font-weight: 800;
+  color: var(--text-secondary);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  user-select: none;
+}
+
+.toggle-divider {
+  width: 1px;
+  height: 16px;
+  background: rgba(0, 0, 0, 0.1);
+  margin: 0 0.1rem;
 }
 
 .toggle-group {
   display: flex;
-  gap: 0.25rem;
+  gap: 0.2rem;
 }
 
 .pos-badge, .side-badge {
   background: rgba(0, 0, 0, 0.03);
-  border: 1px solid var(--card-border);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   color: var(--text-secondary);
   font-size: 0.65rem;
-  padding: 0.15rem 0.3rem;
-  border-radius: 0.25rem;
+  padding: 0.18rem 0.4rem;
+  border-radius: 0.3rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .pos-badge:hover, .side-badge:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.08);
 }
 
 .pos-badge.active {
-  background: var(--accent-white);
-  color: #08090c;
-  border-color: var(--accent-white);
+  background: #1e293b;
+  color: #ffffff;
+  border-color: #1e293b;
 }
 
 .side-badge.active {
@@ -871,6 +906,11 @@ textarea::placeholder {
 }
 
 @media (max-width: 768px) {
+  html, body {
+    overflow-x: hidden;
+    width: 100%;
+  }
+
   .main-header {
     margin: 0 0 1.5rem 0;
     padding: 1rem;
@@ -894,7 +934,25 @@ textarea::placeholder {
   }
 
   main {
+    padding: 0.75rem;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .card {
     padding: 1rem;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .team-column {
+    padding: 0.75rem;
+    max-width: 100%;
+  }
+
+  .teams-grid {
+    width: 100%;
+    max-width: 100%;
   }
 
   .pitch-container {

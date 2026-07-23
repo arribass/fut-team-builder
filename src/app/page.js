@@ -959,26 +959,8 @@ Miércoles 18:00
                           draggable="true"
                           onDragStart={(e) => handleDragStart(e, 'team1', i)}
                         >
-                          <div className="player-name">{p.name}</div>
-                          <div className="player-toggles">
-                            <div className="toggle-group">
-                              {['DEF', 'MED', 'ATQ'].map(pos => (
-                                <button
-                                  key={pos}
-                                  className={`pos-badge ${p.position === pos ? 'active' : ''}`}
-                                  onClick={() => handleUpdatePlayer('team1', i, 'position', pos)}
-                                >{pos}</button>
-                              ))}
-                            </div>
-                            <div className="toggle-group">
-                              {['IZD', 'DCHA'].map(side => (
-                                <button
-                                  key={side}
-                                  className={`side-badge ${p.side === side ? 'active' : ''}`}
-                                  onClick={() => handleUpdatePlayer('team1', i, 'side', side)}
-                                >{side}</button>
-                              ))}
-                            </div>
+                          <div className="player-item-header">
+                            <div className="player-name">{p.name}</div>
                             <button
                               className={`save-badge ${savedFeedback[p.name] ? 'saved' : ''}`}
                               onClick={() => handleSavePlayer(p)}
@@ -986,6 +968,33 @@ Miércoles 18:00
                             >
                               {savedFeedback[p.name] ? '✓' : '💾'}
                             </button>
+                          </div>
+                          <div className="player-toggles">
+                            <div className="toggle-section">
+                              <span className="toggle-label">POS</span>
+                              <div className="toggle-group pos-group">
+                                {['DEF', 'MED', 'ATQ'].map(pos => (
+                                  <button
+                                    key={pos}
+                                    className={`pos-badge ${p.position === pos ? 'active' : ''}`}
+                                    onClick={() => handleUpdatePlayer('team1', i, 'position', pos)}
+                                  >{pos}</button>
+                                ))}
+                              </div>
+                            </div>
+                            <div className="toggle-divider" />
+                            <div className="toggle-section">
+                              <span className="toggle-label">LADO</span>
+                              <div className="toggle-group side-group">
+                                {['IZD', 'DCHA'].map(side => (
+                                  <button
+                                    key={side}
+                                    className={`side-badge ${p.side === side ? 'active' : ''}`}
+                                    onClick={() => handleUpdatePlayer('team1', i, 'side', side)}
+                                  >{side}</button>
+                                ))}
+                              </div>
+                            </div>
                           </div>
                         </li>
                       ))}
@@ -1052,26 +1061,8 @@ Miércoles 18:00
                           draggable="true"
                           onDragStart={(e) => handleDragStart(e, 'team2', i)}
                         >
-                          <div className="player-name">{p.name}</div>
-                          <div className="player-toggles">
-                            <div className="toggle-group">
-                              {['DEF', 'MED', 'ATQ'].map(pos => (
-                                <button
-                                  key={pos}
-                                  className={`pos-badge ${p.position === pos ? 'active' : ''}`}
-                                  onClick={() => handleUpdatePlayer('team2', i, 'position', pos)}
-                                >{pos}</button>
-                              ))}
-                            </div>
-                            <div className="toggle-group">
-                              {['IZD', 'DCHA'].map(side => (
-                                <button
-                                  key={side}
-                                  className={`side-badge ${p.side === side ? 'active' : ''}`}
-                                  onClick={() => handleUpdatePlayer('team2', i, 'side', side)}
-                                >{side}</button>
-                              ))}
-                            </div>
+                          <div className="player-item-header">
+                            <div className="player-name">{p.name}</div>
                             <button
                               className={`save-badge ${savedFeedback[p.name] ? 'saved' : ''}`}
                               onClick={() => handleSavePlayer(p)}
@@ -1079,6 +1070,33 @@ Miércoles 18:00
                             >
                               {savedFeedback[p.name] ? '✓' : '💾'}
                             </button>
+                          </div>
+                          <div className="player-toggles">
+                            <div className="toggle-section">
+                              <span className="toggle-label">POS</span>
+                              <div className="toggle-group pos-group">
+                                {['DEF', 'MED', 'ATQ'].map(pos => (
+                                  <button
+                                    key={pos}
+                                    className={`pos-badge ${p.position === pos ? 'active' : ''}`}
+                                    onClick={() => handleUpdatePlayer('team2', i, 'position', pos)}
+                                  >{pos}</button>
+                                ))}
+                              </div>
+                            </div>
+                            <div className="toggle-divider" />
+                            <div className="toggle-section">
+                              <span className="toggle-label">LADO</span>
+                              <div className="toggle-group side-group">
+                                {['IZD', 'DCHA'].map(side => (
+                                  <button
+                                    key={side}
+                                    className={`side-badge ${p.side === side ? 'active' : ''}`}
+                                    onClick={() => handleUpdatePlayer('team2', i, 'side', side)}
+                                  >{side}</button>
+                                ))}
+                              </div>
+                            </div>
                           </div>
                         </li>
                       ))}
