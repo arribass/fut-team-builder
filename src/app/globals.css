@@ -736,6 +736,9 @@ textarea::placeholder {
 .pitch-section {
   margin-top: 6rem;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .pitch-container {
@@ -869,7 +872,7 @@ textarea::placeholder {
 
 @media (max-width: 768px) {
   .main-header {
-    margin: -1rem -1rem 1.5rem -1rem;
+    margin: 0 0 1.5rem 0;
     padding: 1rem;
   }
 
@@ -897,6 +900,9 @@ textarea::placeholder {
   .pitch-container {
     aspect-ratio: 9 / 16;
     max-height: none;
+    width: 100%;
+    max-width: 420px;
+    margin: 0 auto;
   }
 
   .pitch-player, .pitch-slot {
@@ -1722,6 +1728,64 @@ textarea::placeholder {
   padding: 0.5rem 0.75rem;
   border-radius: 0.5rem;
   border: 1px solid rgba(200, 16, 46, 0.25);
+}
+
+/* Color Picker Popover Dropdown */
+.color-swatches-dropdown {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 0.75rem;
+  padding: 0.5rem;
+  display: flex;
+  gap: 0.35rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  z-index: 50;
+  flex-wrap: wrap;
+  max-width: 190px;
+  animation: fadeInDropdown 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Footer Styles */
+.main-footer {
+  margin-top: 4rem;
+  background: rgba(248, 250, 252, 0.8);
+  border-top: 1px solid var(--card-border);
+  padding: 1.5rem 2rem;
+  width: 100%;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.footer-inner {
+  max-width: 1300px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.footer-links {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.footer-link-separator {
+  color: rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+  .footer-inner {
+    flex-direction: column;
+    text-align: center;
+  }
 }
 
 

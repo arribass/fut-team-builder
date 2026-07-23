@@ -247,6 +247,8 @@ export default function Home() {
   const [team2ColorKey, setTeam2ColorKey] = useState('red');
   const [team1CustomName, setTeam1CustomName] = useState('');
   const [team2CustomName, setTeam2CustomName] = useState('');
+  const [t1ColorOpen, setT1ColorOpen] = useState(false);
+  const [t2ColorOpen, setT2ColorOpen] = useState(false);
 
   const [includePositions, setIncludePositions] = useState(true);
   const [includeReserves, setIncludeReserves] = useState(true);
@@ -757,21 +759,6 @@ R2. Pedro`;
               <span className="logo-emoji">⚽</span>
               <span className="logo-text">FUT<span className="logo-highlight">UNAV</span></span>
             </div>
-
-            <div className="app-tabs">
-              <button 
-                className={`tab-btn ${activeTab === 'balancer' ? 'active' : ''}`}
-                onClick={() => setActiveTab('balancer')}
-              >
-                ⚖️ Equilibrador
-              </button>
-              <button 
-                className={`tab-btn ${activeTab === 'tournament' ? 'active' : ''}`}
-                onClick={() => setActiveTab('tournament')}
-              >
-                🏆 Torneo <span className="beta-badge">BETA</span>
-              </button>
-            </div>
           </div>
 
           {activeTab === 'balancer' && teams && (
@@ -920,8 +907,16 @@ Miércoles 18:00
                   >
                     <div className="team-header-row" style={{ alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', flex: 1, minWidth: '160px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                          <span style={{ fontSize: '1.25rem' }}>{t1Info.emoji}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', position: 'relative' }}>
+                          <button
+                            type="button"
+                            className="color-picker-trigger-btn"
+                            onClick={() => setT1ColorOpen(!t1ColorOpen)}
+                            title="Cambiar color del equipo"
+                            style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.25rem', padding: '0.2rem', display: 'flex', alignItems: 'center' }}
+                          >
+                            {t1Info.emoji}
+                          </button>
                           <input
                             type="text"
                             className="team-name-input"
@@ -933,17 +928,22 @@ Miércoles 18:00
                             placeholder={t1Info.defaultName}
                             style={{ color: t1Info.hex }}
                           />
-                        </div>
-                        <div className="color-swatches">
-                          {TEAM_COLOR_PRESETS.map(preset => (
-                            <button
-                              key={`t1-swatch-${preset.id}`}
-                              className={`color-swatch-btn ${team1ColorKey === preset.id ? 'active' : ''}`}
-                              style={{ backgroundColor: preset.hex, color: preset.hex }}
-                              onClick={() => handleSelectTeam1Color(preset.id)}
-                              title={preset.defaultName}
-                            />
-                          ))}
+                          {t1ColorOpen && (
+                            <div className="color-swatches-dropdown">
+                              {TEAM_COLOR_PRESETS.map(preset => (
+                                <button
+                                  key={`t1-swatch-${preset.id}`}
+                                  className={`color-swatch-btn ${team1ColorKey === preset.id ? 'active' : ''}`}
+                                  style={{ backgroundColor: preset.hex, color: preset.hex }}
+                                  onClick={() => {
+                                    handleSelectTeam1Color(preset.id);
+                                    setT1ColorOpen(false);
+                                  }}
+                                  title={preset.defaultName}
+                                />
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
                       <span className={`team-status ${teams.team1.length < teamSize ? 'status-incomplete' : 'status-complete'}`}>
@@ -1000,8 +1000,16 @@ Miércoles 18:00
                   >
                     <div className="team-header-row" style={{ alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', flex: 1, minWidth: '160px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                          <span style={{ fontSize: '1.25rem' }}>{t2Info.emoji}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', position: 'relative' }}>
+                          <button
+                            type="button"
+                            className="color-picker-trigger-btn"
+                            onClick={() => setT2ColorOpen(!t2ColorOpen)}
+                            title="Cambiar color del equipo"
+                            style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.25rem', padding: '0.2rem', display: 'flex', alignItems: 'center' }}
+                          >
+                            {t2Info.emoji}
+                          </button>
                           <input
                             type="text"
                             className="team-name-input"
@@ -1013,17 +1021,22 @@ Miércoles 18:00
                             placeholder={t2Info.defaultName}
                             style={{ color: t2Info.hex }}
                           />
-                        </div>
-                        <div className="color-swatches">
-                          {TEAM_COLOR_PRESETS.map(preset => (
-                            <button
-                              key={`t2-swatch-${preset.id}`}
-                              className={`color-swatch-btn ${team2ColorKey === preset.id ? 'active' : ''}`}
-                              style={{ backgroundColor: preset.hex, color: preset.hex }}
-                              onClick={() => handleSelectTeam2Color(preset.id)}
-                              title={preset.defaultName}
-                            />
-                          ))}
+                          {t2ColorOpen && (
+                            <div className="color-swatches-dropdown">
+                              {TEAM_COLOR_PRESETS.map(preset => (
+                                <button
+                                  key={`t2-swatch-${preset.id}`}
+                                  className={`color-swatch-btn ${team2ColorKey === preset.id ? 'active' : ''}`}
+                                  style={{ backgroundColor: preset.hex, color: preset.hex }}
+                                  onClick={() => {
+                                    handleSelectTeam2Color(preset.id);
+                                    setT2ColorOpen(false);
+                                  }}
+                                  title={preset.defaultName}
+                                />
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
                       <span className={`team-status ${teams.team2.length < teamSize ? 'status-incomplete' : 'status-complete'}`}>
@@ -1306,6 +1319,16 @@ Miércoles 18:00
         } : null} />
       )}
     </main>
+    <footer className="main-footer">
+      <div className="footer-inner">
+        <p>© {new Date().getFullYear()} FUT UNAV. Creado con ❤️ para el grupo de fútbol de la UNAV.</p>
+        <div className="footer-links">
+          <span className="footer-link-item">⚽ Blanco y Rojo</span>
+          <span className="footer-link-separator">•</span>
+          <span className="footer-link-item">Universidad de Navarra</span>
+        </div>
+      </div>
+    </footer>
     </>
   );
 }
